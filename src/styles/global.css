@@ -1143,13 +1143,28 @@ html:has(dialog[open]) .cursor {
     gap: 64px;
     align-items: start;
   }
-  .photo {
+  .photo-wrap {
     position: sticky;
     top: 96px;
   }
 }
 
+.photo-wrap {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.photo-mesh {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .photo {
+  display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 1;

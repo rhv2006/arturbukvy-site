@@ -235,7 +235,10 @@ const dateRu = (iso: string) =>
       </section>
 
       <section id="about" class="section wrap about">
-        <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
+        <div class="photo-wrap">
+          <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
+          <canvas class="photo-mesh" aria-hidden="true"></canvas>
+        </div>
         <div>
           <h2>Обо мне</h2>
           <p class="about-lead">
@@ -721,6 +724,128 @@ const dateRu = (iso: string) =>
       dialog.querySelector('[data-close-reel]')?.addEventListener('click', close);
       dialog.addEventListener('click', (e) => e.target === dialog && close());
       dialog.addEventListener('close', () => player.pause());
+    </script>
+    <script>
+      // Фото «Обо мне»: под курсором проявляется 3D-сетка. Рельеф берётся из яркости самого портрета,
+      // сетка чуть поворачивается вслед за мышью. Только для мыши и без reduced motion.
+      const meshOk =
+        matchMedia('(hover: hover) and (pointer: fine)').matches &&
+        !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const wrap = document.querySelector<HTMLElement>('.photo-wrap');
+      const img = wrap?.querySelector<HTMLImageElement>('img');
+      const canvas = wrap?.querySelector<HTMLCanvasElement>('canvas');
+      if (meshOk && wrap && img && canvas) {
+        const ctx = canvas.getContext('2d')!;
+        const N = 56; // вершин по стороне
+        let height: Float32Array | null = null;
+
+        const buildHeight = () => {
+          const c = document.createElement('canvas');
+          c.width = c.height = N;
+          const g = c.getContext('2d', { willReadFrequently: true })!;
+          g.drawImage(img, 0, 0, N, N);
+          const d = g.getImageData(0, 0, N, N).data;
+          height = new Float32Array(N * N);
+          for (let i = 0; i < N * N; i++) {
+            height[i] = (0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]) / 255;
+          }
+        };
+        if (img.complete && img.naturalWidth) buildHeight();
+        else img.addEventListener('load', buildHeight, { once: true });
+
+        let w = 0, h = 0, dpr = 1;
+        const resize = () => {
+          dpr = Math.min(devicePixelRatio || 1, 2);
+          w = wrap.clientWidth;
+          h = wrap.clientHeight;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
+        };
+        new ResizeObserver(resize).observe(wrap);
+        resize();
+
+        // mx/my — курсор в долях (0..1), tx/ty — куда он едет; k — раскрытие линзы 0..1
+        let mx = 0.5, my = 0.5, tx = 0.5, ty = 0.5, k = 0, kt = 0, raf = 0, t0 = performance.now();
+        const px = new Float32Array(N * N), py = new Float32Array(N * N);
+
+        const frame = (now: number) => {
+          raf = 0;
+          mx += (tx - mx) * 0.14;
+          my += (ty - my) * 0.14;
+          k += (kt - k) * 0.1;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.clearRect(0, 0, w, h);
+          if (k < 0.005 && kt === 0) return;
+
+          if (height) {
+            const t = (now - t0) / 1000;
+            const ry = (mx - 0.5) * 0.9, rx = -(my - 0.5) * 0.9;
+            const cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+            const depth = 0.32 * k, fov = 1.6;
+            for (let j = 0; j < N; j++) {
+              for (let i = 0; i < N; i++) {
+                const n = j * N + i;
+                const u = i / (N - 1) - 0.5, v = j / (N - 1) - 0.5;
+                // рельеф + бегущая по сетке мягкая волна
+                let z = (height[n] - 0.5) * depth + Math.sin(u * 9 + v * 6 - t * 2.2) * 0.012 * k;
+                // поворот вокруг Y, потом вокруг X
+                const x1 = u * cy + z * sy, z1 = -u * sy + z * cy;
+                const y2 = v * cx - z1 * sx, z2 = v * sx + z1 * cx;
+                const s = fov / (fov + z2);
+                px[n] = (0.5 + x1 * s) * w;
+                py[n] = (0.5 + y2 * s) * h;
+              }
+            }
+            // затемняем фото внутри линзы, чтобы сетка читалась
+            ctx.fillStyle = 'rgba(8, 10, 6, 0.72)';
+            ctx.fillRect(0, 0, w, h);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(212, 255, 58, 0.85)';
+            ctx.beginPath();
+            for (let j = 0; j < N; j++) {
+              ctx.moveTo(px[j * N], py[j * N]);
+              for (let i = 1; i < N; i++) ctx.lineTo(px[j * N + i], py[j * N + i]);
+            }
+            for (let i = 0; i < N; i++) {
+              ctx.moveTo(px[i], py[i]);
+              for (let j = 1; j < N; j++) ctx.lineTo(px[j * N + i], py[j * N + i]);
+            }
+            ctx.stroke();
+            // узлы
+            ctx.fillStyle = 'rgba(232, 255, 150, 0.9)';
+            for (let n = 0; n < N * N; n += 3) ctx.fillRect(px[n] - 0.8, py[n] - 0.8, 1.6, 1.6);
+          }
+
+          // оставляем сетку только в круге вокруг курсора
+          const R = Math.max(w, h) * 0.34 * (0.35 + 0.65 * k);
+          const g = ctx.createRadialGradient(mx * w, my * h, 0, mx * w, my * h, R);
+          g.addColorStop(0, `rgba(0,0,0,${k})`);
+          g.addColorStop(0.6, `rgba(0,0,0,${0.85 * k})`);
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.globalCompositeOperation = 'destination-in';
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, w, h);
+
+          raf = requestAnimationFrame(frame);
+        };
+        const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+        wrap.addEventListener('pointerenter', (e) => {
+          const r = wrap.getBoundingClientRect();
+          mx = tx = (e.clientX - r.left) / r.width;
+          my = ty = (e.clientY - r.top) / r.height;
+          kt = 1;
+          kick();
+        });
+        wrap.addEventListener('pointermove', (e) => {
+          const r = wrap.getBoundingClientRect();
+          tx = (e.clientX - r.left) / r.width;
+          ty = (e.clientY - r.top) / r.height;
+          kick();
+        });
+        wrap.addEventListener('pointerleave', () => { kt = 0; kick(); });
+      }
     </script>
   </body>
 </html>
