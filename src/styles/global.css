@@ -1052,11 +1052,26 @@ html:has(dialog[open]) .cursor {
     var(--surface);
 }
 
+.cover-stub {
+  container-type: inline-size;
+  align-content: center;
+  gap: 6%;
+  color: var(--accent);
+}
+
+.cover-stub svg {
+  width: 26%;
+  height: auto;
+  justify-self: center;
+}
+
 .cover-stub span {
   font-family: var(--display);
-  font-size: clamp(48px, 6vw, 96px);
+  font-size: 11cqi;
   font-weight: 700;
-  color: var(--accent);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .card-sm h3 {

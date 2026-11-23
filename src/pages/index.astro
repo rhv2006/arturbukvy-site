@@ -20,7 +20,7 @@ const site = {
   reelVimeo: 'https://vimeo.com/1218208289',
 };
 
-// Работы не с Behance: идут первыми в «Ещё работах». Если файла обложки в public/ ещё нет,
+// Работы не с Behance: идут последними в «Ещё работах». Если файла обложки в public/ ещё нет,
 // карточка рисуется заглушкой с названием.
 const extraWorks = [
   {
@@ -28,14 +28,16 @@ const extraWorks = [
     tag: 'AI · Видео',
     url: 'https://drive.google.com/drive/folders/1nfMy5gJ08VQH_HjSKECRCW_tQ4_V_fbi?usp=sharing',
     cover: '/covers/ai-video.jpg',
-    stub: 'AI',
+    stub: 'AI video',
+    icon: 'player',
   },
   {
     title: '3D-видео для мобильных игр',
     tag: '3D · Мобильные игры',
     url: 'https://drive.google.com/drive/folders/18aM7jQJYHcGfdYxQP0vLomixtc8FWcZ6?usp=sharing',
     cover: '/covers/mobile-games.jpg',
-    stub: 'GAME',
+    stub: 'Mobile games',
+    icon: 'gamepad',
   },
 ].map((w) => ({ ...w, hasCover: existsSync(`public${w.cover}`) }));
 
@@ -237,6 +239,17 @@ const dateRu = (iso: string) =>
             <>
               <h2 class="sub">Ещё работы</h2>
               <ul class="grid-rest">
+                {rest.map((c) => (
+                  <li class="card card-sm">
+                    <a href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть">
+                      <div class="card-media" data-tilt>
+                        <img src={c.cover} alt="" loading="lazy" decoding="async" />
+                      </div>
+                      <h3><span class="title-line">{c.title}</span></h3>
+                      {c.tag && <p class="tag">{c.tag}</p>}
+                    </a>
+                  </li>
+                ))}
                 {extraWorks.map((c) => (
                   <li class="card card-sm">
                     <a href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть">
@@ -244,19 +257,30 @@ const dateRu = (iso: string) =>
                         {c.hasCover ? (
                           <img src={c.cover} alt="" loading="lazy" decoding="async" />
                         ) : (
-                          <div class="cover-stub" aria-hidden="true"><span>{c.stub}</span></div>
+                          <div class="cover-stub" aria-hidden="true">
+                            {c.icon === 'player' && (
+                              <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+                                <rect x="2" y="2" width="60" height="44" rx="6" />
+                                <path d="M2 12h60" />
+                                <circle cx="9" cy="7" r="1.2" fill="currentColor" />
+                                <circle cx="15" cy="7" r="1.2" fill="currentColor" />
+                                <circle cx="21" cy="7" r="1.2" fill="currentColor" />
+                                <path d="M27 20v14l12-7z" fill="currentColor" />
+                                <path d="M10 40h44" opacity=".5" />
+                                <path d="M10 40h18" />
+                              </svg>
+                            )}
+                            {c.icon === 'gamepad' && (
+                              <svg viewBox="0 0 64 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+                                <path d="M18 4h28c8 0 13 6 15 16l2 11c1 7-5 11-10 7l-7-6H18l-7 6c-5 4-11 0-10-7l2-11C5 10 10 4 18 4z" />
+                                <path d="M17 14v12M11 20h12" />
+                                <circle cx="44" cy="16" r="2" fill="currentColor" />
+                                <circle cx="50" cy="22" r="2" fill="currentColor" />
+                              </svg>
+                            )}
+                            <span>{c.stub}</span>
+                          </div>
                         )}
-                      </div>
-                      <h3><span class="title-line">{c.title}</span></h3>
-                      {c.tag && <p class="tag">{c.tag}</p>}
-                    </a>
-                  </li>
-                ))}
-                {rest.map((c) => (
-                  <li class="card card-sm">
-                    <a href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть">
-                      <div class="card-media" data-tilt>
-                        <img src={c.cover} alt="" loading="lazy" decoding="async" />
                       </div>
                       <h3><span class="title-line">{c.title}</span></h3>
                       {c.tag && <p class="tag">{c.tag}</p>}
