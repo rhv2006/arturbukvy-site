@@ -28,6 +28,14 @@ const extraWorks = [
     tag: 'AI · Видео',
     url: 'https://drive.google.com/drive/folders/1nfMy5gJ08VQH_HjSKECRCW_tQ4_V_fbi?usp=sharing',
     cover: '/covers/ai-video.jpg',
+    stub: 'AI',
+  },
+  {
+    title: '3D-видео для мобильных игр',
+    tag: '3D · Мобильные игры',
+    url: 'https://drive.google.com/drive/folders/18aM7jQJYHcGfdYxQP0vLomixtc8FWcZ6?usp=sharing',
+    cover: '/covers/mobile-games.jpg',
+    stub: 'GAME',
   },
 ].map((w) => ({ ...w, hasCover: existsSync(`public${w.cover}`) }));
 
@@ -236,7 +244,7 @@ const dateRu = (iso: string) =>
                         {c.hasCover ? (
                           <img src={c.cover} alt="" loading="lazy" decoding="async" />
                         ) : (
-                          <div class="cover-stub" aria-hidden="true"><span>AI</span></div>
+                          <div class="cover-stub" aria-hidden="true"><span>{c.stub}</span></div>
                         )}
                       </div>
                       <h3><span class="title-line">{c.title}</span></h3>
