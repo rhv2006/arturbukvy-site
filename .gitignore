@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.astro/
+
+# исходники видео (на сайт идут сжатые копии из public/video)
+/*.mp4

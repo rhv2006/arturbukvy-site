@@ -1,0 +1,34 @@
+{
+  "_readme": "Статьи с teletype.in/@rhv2006. ID — последняя часть адреса статьи. order: какие статьи показывать первыми (остальные — по дате, новые сверху). hidden: какие не показывать на сайте. cache — запасная копия на случай, если Teletype недоступен при сборке.",
+  "order": ["5_4evRjEqCe", "hKFw6GKi-yF"],
+  "hidden": [],
+  "cache": [
+    {
+      "id": "5_4evRjEqCe",
+      "title": "Минус 80% рутины на ресайзах: Как я заавтоматизировал верстку для T2 с помощью ExtendScript",
+      "url": "https://teletype.in/@rhv2006/5_4evRjEqCe",
+      "cover": "https://img3.teletype.in/files/21/72/21720210-d84b-43bf-a4c3-645cd736b6a1.png",
+      "date": "2026-08-14"
+    },
+    {
+      "id": "hKFw6GKi-yF",
+      "title": "«Больше никаких 1000 кликов»: Как я заставил C4D рендерить сотни конфигураций без человека",
+      "url": "https://teletype.in/@rhv2006/hKFw6GKi-yF",
+      "cover": "https://img1.teletype.in/files/03/19/03196195-cf07-49dc-be02-9aee05b59f1d.png",
+      "date": "2026-08-14"
+    },
+    {
+      "id": "ZN7TeEHCqY3",
+      "title": "Как я написал бота, который ищет мне вакансии, пока я сплю",
+      "url": "https://teletype.in/@rhv2006/ZN7TeEHCqY3",
+      "cover": "https://img3.teletype.in/files/2f/4b/2f4bb919-39a0-4e42-b0a3-0019c11f04e7.jpeg",
+      "date": "2026-08-19"
+    },
+    {
+      "id": "850dZpOdUEY",
+      "title": "Бот, который откликается на вакансии за меня",
+      "url": "https://teletype.in/@rhv2006/850dZpOdUEY",
+      "date": "2026-08-19"
+    }
+  ]
+}

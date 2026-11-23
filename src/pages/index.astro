@@ -1,0 +1,726 @@
+---
+import '@fontsource-variable/unbounded';
+import '@fontsource-variable/manrope';
+import '../styles/global.css';
+import { getCases } from '../lib/behance';
+import { getArticles } from '../lib/teletype';
+
+const [{ top, rest }, articles] = await Promise.all([getCases(), getArticles()]);
+
+const site = {
+  name: 'Артур Фаттахов',
+  role: '3D, motion и key visual',
+  telegram: 'https://t.me/Arturbukvi',
+  telegramLabel: '@Arturbukvi',
+  email: 'rhv2006@gmail.com',
+  hh: 'https://hh.ru/resume/d357baebff014567e30039ed1f66587939394b',
+  behance: 'https://www.behance.net/rhv2006',
+  automation: 'https://teletype.in/@rhv2006',
+  reelVimeo: 'https://vimeo.com/1218208289',
+};
+
+const description =
+  'Артур Фаттахов — дизайнер 3D, motion и key visual. 14 лет опыта, кейсы для Альфа-Банка, МТС, t2, ОТП Банка и Касперского.';
+
+const facts = [
+  { value: '14 лет', label: 'в дизайне: от препресса до CGI-роликов' },
+  { value: '17 000+', label: 'экранов t2 по России крутят мои 20+ роликов' },
+  { value: '30+', label: '3D key visual для промо приложения Альфа-Банка' },
+];
+
+const tools = ['Cinema 4D', 'Redshift', 'Blender', 'Unreal Engine 5', 'After Effects', 'Photoshop', 'Illustrator', 'Figma'];
+const ai = ['Veo 3.1', 'Kling 3.0', 'Sora 2 Pro', 'Seedance', 'Flux 2 Pro', 'Nano Banana Pro', 'Midjourney', 'Recraft'];
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// Опыт — выжимка из резюме, самое свежее сверху.
+const experience = [
+  {
+    period: '2024 — сейчас',
+    company: 'pronew',
+    role: 'CGI / motion-дизайнер',
+    points: [
+      'Продюсирую CGI-ролики под ключ: идея → сценарий → сториборд → 3D → композитинг',
+      '20+ роликов для t2 крутятся на 17 000+ цифровых экранах по всей России',
+      'Адаптирую KV и motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16',
+      '30+ постов и motion-видео для «Фудсити», аудитория 200 000+',
+    ],
+  },
+  {
+    period: '2023 — 2024',
+    company: 'Альфа-Банк',
+    role: '3D key visual designer, проектно',
+    points: [
+      '30+ 3D key visual для промо-кампании мобильного приложения',
+      'Полный цикл CGI: скетч → моделинг → шейдинг → свет → рендер → композитинг',
+      'Нейросети в идеации ускорили этап концептов в 2 раза',
+    ],
+  },
+  {
+    period: '2023 — 2024',
+    company: 'СБИС',
+    role: 'UI/UX и 3D-дизайнер',
+    points: [
+      '30+ CG-сцен в Cinema 4D + Redshift: CTR баннеров 3,2% против 1,8% у статики',
+      'Дизайн-система маркетплейса из 120+ компонентов в Figma',
+    ],
+  },
+  {
+    period: '2020 — 2022',
+    company: 'РН-УфаНИПИнефть (Роснефть)',
+    role: 'Графический дизайнер',
+    points: ['Визуальные пакеты для корпоративных событий, 120+ пиктограмм, инфографика и препресс'],
+  },
+  {
+    period: '2011 — 2020',
+    company: 'Агентства и фриланс',
+    role: 'SMM-, веб- и графический дизайнер',
+    points: ['rechi media (Samocat Sharing, SmartyKids, DeliLabs), ojo (Finex), наружная реклама и печать'],
+  },
+];
+
+const dateRu = (iso: string) =>
+  new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{site.name} — {site.role}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={Astro.site} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={`${site.name} — ${site.role}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL('/og.jpg', Astro.site)} />
+    <meta property="og:url" content={Astro.site} />
+    <meta property="og:locale" content="ru_RU" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://mir-s3-cdn-cf.behance.net" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-pill">
+        <span class="pill-glow" aria-hidden="true"></span>
+        <a class="logo" href="#top">артурбуквы</a>
+        <nav class="topbar-nav" aria-label="Разделы">
+          <a href="#work">Кейсы</a>
+          <a href="#about">Обо мне</a>
+          <a href="#experience">Опыт</a>
+          <a href="#articles">Статьи</a>
+        </nav>
+        <div class="topbar-actions">
+          <a class="icon-btn" href={site.hh} target="_blank" rel="noopener" aria-label="Резюме на hh.ru">hh</a>
+          <a class="icon-btn" href={site.behance} target="_blank" rel="noopener" aria-label="Behance">Bē</a>
+          <a class="icon-btn" href={`mailto:${site.email}`} aria-label="Написать на почту">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11Zm1.8.4 7.2 5.6 7.2-5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+          </a>
+          <a class="tg-btn" href={site.telegram} target="_blank" rel="noopener">
+            <span class="tg-long">Написать в Telegram</span><span class="tg-short">Telegram</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <button class="menu-btn" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobile-menu">
+            <span></span><span></span>
+          </button>
+        </div>
+      </div>
+      <nav id="mobile-menu" class="mobile-menu" aria-label="Меню">
+        <a href="#work">Кейсы</a>
+        <a href="#about">Обо мне</a>
+        <a href="#experience">Опыт</a>
+        <a href="#articles">Статьи</a>
+        <a href="#contact">Контакты</a>
+        <div class="mobile-menu-icons">
+          <a class="icon-btn" href={site.hh} target="_blank" rel="noopener" aria-label="Резюме на hh.ru">hh</a>
+          <a class="icon-btn" href={site.behance} target="_blank" rel="noopener" aria-label="Behance">Bē</a>
+          <a class="icon-btn" href={`mailto:${site.email}`} aria-label="Написать на почту">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11Zm1.8.4 7.2 5.6 7.2-5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-label="Шоурил">
+        <div class="hero-media">
+          <video
+            class="bg-video"
+            data-src="/video/reel-loop.mp4"
+            poster="/video/reel-poster.jpg"
+            muted
+            loop
+            playsinline
+            preload="none"
+            aria-hidden="true"></video>
+        </div>
+        <div class="hero-shade"></div>
+        <div class="hero-content wrap">
+          <p class="eyebrow">{site.name} · дизайнер</p>
+          <h1>3D, motion<br />и key visual</h1>
+          <p class="lead">
+            14 лет в дизайне. Ролики, KV и карточки для Альфа-Банка, МТС, t2, ОТП Банка и Касперского. Работаю удалённо.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href={site.telegram} target="_blank" rel="noopener">Написать в Telegram</a>
+            <button class="btn btn-ghost" type="button" data-open-reel data-cursor="Play">
+              <span class="play" aria-hidden="true"></span> Смотреть шоурил
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="work" class="section wrap">
+        <div class="section-head">
+          <h2>Избранные работы</h2>
+          <a class="link" href={site.behance} target="_blank" rel="noopener">Все проекты на Behance ↗</a>
+        </div>
+        <ol class="grid-top">
+          {
+            top.map((c, i) => (
+              <li class="card">
+                <a href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть">
+                  <div class="card-media" data-tilt>
+                    <img src={c.cover} alt="" loading={i < 2 ? 'eager' : 'lazy'} decoding="async" />
+                    {c.loop && (
+                      <video class="bg-video card-loop" data-src={c.loop} muted loop playsinline preload="none" aria-hidden="true" />
+                    )}
+                    {c.videos && (
+                      <div class="banner-stack">
+                        {c.videos.map((src) => (
+                          <div class="banner">
+                            <video class="bg-video" data-src={src} muted loop playsinline preload="none" aria-hidden="true" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div class="card-meta">
+                    <span class="num">{pad(i + 1)}</span>
+                    <div>
+                      <h3>
+                        <span class="title-line">{c.title}</span>
+                        <span class="arrow" aria-hidden="true">↗</span>
+                      </h3>
+                      {c.tag && <p class="tag">{c.tag}</p>}
+                    </div>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+
+        {
+          rest.length > 0 && (
+            <>
+              <h2 class="sub">Ещё работы</h2>
+              <ul class="grid-rest">
+                {rest.map((c) => (
+                  <li class="card card-sm">
+                    <a href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть">
+                      <div class="card-media" data-tilt>
+                        <img src={c.cover} alt="" loading="lazy" decoding="async" />
+                      </div>
+                      <h3><span class="title-line">{c.title}</span></h3>
+                      {c.tag && <p class="tag">{c.tag}</p>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </section>
+
+      <section id="about" class="section wrap about">
+        <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
+        <div>
+          <h2>Обо мне</h2>
+          <p class="about-lead">
+            Я Артур, дизайнер с 14-летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
+          </p>
+          <p>
+            Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса, в Cinema 4D, Redshift, Blender и
+            Unreal Engine 5. Веду CGI-ролики под ключ: идея, сценарий, сториборд, 3D-продакшен, композитинг. Адаптирую KV и
+            motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
+          </p>
+          <p>
+            Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.
+            <a class="link" href="#articles">Статьи об автоматизации ↓</a>
+          </p>
+
+          <dl class="facts">
+            {
+              facts.map((f) => (
+                <div>
+                  <dt>{f.value}</dt>
+                  <dd>{f.label}</dd>
+                </div>
+              ))
+            }
+          </dl>
+
+          <div class="stack">
+            <p class="stack-title">Инструменты</p>
+            <ul class="chips">{tools.map((t) => <li>{t}</li>)}</ul>
+            <p class="stack-title">Нейросети</p>
+            <ul class="chips">{ai.map((t) => <li>{t}</li>)}</ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="experience" class="section wrap experience">
+        <div class="section-head">
+          <h2>Опыт</h2>
+          <a class="link" href={site.hh} target="_blank" rel="noopener">Полное резюме на hh.ru ↗</a>
+        </div>
+        <ol class="timeline">
+          {
+            experience.map((job) => (
+              <li class="job">
+                <p class="job-period">{job.period}</p>
+                <div>
+                  <h3>{job.company}</h3>
+                  <p class="job-role">{job.role}</p>
+                  <ul class="job-points">
+                    {job.points.map((p) => (
+                      <li>{p}</li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="edu">Образование: МГГУ им. Шолохова, графический дизайн, 2013</p>
+      </section>
+
+      {
+        articles.length > 0 && (
+          <section id="articles" class="section wrap">
+            <div class="section-head">
+              <div>
+                <h2>Статьи об автоматизации</h2>
+                <p class="section-lead">
+                  Как я убираю рутину из продакшена: скрипты для Illustrator, пакетный рендер в Cinema 4D, Python-боты.
+                </p>
+              </div>
+              <a class="link" href={site.automation} target="_blank" rel="noopener">Все статьи на Teletype ↗</a>
+            </div>
+            <ul class="articles">
+              {articles.map((a) => (
+                <li class="card article">
+                  <a href={a.url} target="_blank" rel="noopener" data-cursor="Читать">
+                    <div class:list={['card-media', !a.cover && 'no-cover']} data-tilt>
+                      {a.cover ? (
+                        <img src={a.cover} alt="" loading="lazy" decoding="async" />
+                      ) : (
+                        <span class="no-cover-mark" aria-hidden="true">{'</>'}</span>
+                      )}
+                    </div>
+                    <p class="article-date">{dateRu(a.date)}</p>
+                    <h3>
+                      <span class="title-line">{a.title}</span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </h3>
+                    {a.excerpt && <p class="article-excerpt">{a.excerpt}</p>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      <section id="contact" class="section wrap contact">
+        <p class="eyebrow">Ищу работу и проекты · удалённо</p>
+        <h2 class="contact-title">Давайте обсудим<br />вашу задачу</h2>
+        <a class="btn btn-primary btn-lg" href={site.telegram} target="_blank" rel="noopener">
+          Написать в Telegram {site.telegramLabel}
+        </a>
+        <ul class="contact-links">
+          <li><a class="link" href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li><a class="link" href={site.hh} target="_blank" rel="noopener">Резюме на hh.ru ↗</a></li>
+          <li><a class="link" href={site.behance} target="_blank" rel="noopener">Behance ↗</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="wrap footer">
+      <span>© {new Date().getFullYear()} {site.name}</span>
+      <span>артурбуквы.рф</span>
+    </footer>
+
+    <div class="cursor" aria-hidden="true">
+      <div class="cursor-body">
+        <svg class="cursor-play" viewBox="0 0 24 24">
+          <path d="M8 4.8v14.4a1.2 1.2 0 0 0 1.8 1l11.5-7.2a1.2 1.2 0 0 0 0-2L9.8 3.8A1.2 1.2 0 0 0 8 4.8Z"></path>
+        </svg>
+        <span class="cursor-label"></span>
+      </div>
+    </div>
+
+    <dialog class="reel" aria-label="Шоурил">
+      <button class="reel-close" type="button" data-close-reel aria-label="Закрыть">×</button>
+      <div class="reel-frame">
+        <video data-src="/video/reel.mp4" poster="/video/reel-poster.jpg" controls playsinline preload="none"></video>
+      </div>
+      <p class="reel-fallback">
+        Шоурил также на <a class="link" href={site.reelVimeo} target="_blank" rel="noopener">Vimeo ↗</a>
+      </p>
+    </dialog>
+
+    <script>
+      // Фоновые видео: файл грузим, только когда ролик рядом с экраном, и ставим на паузу вне экрана.
+      // Тем, кто просил меньше анимации, видео не включаем: остаются постер и обложки.
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) {
+        const io = new IntersectionObserver(
+          (entries) =>
+            entries.forEach(({ target, isIntersecting }) => {
+              const v = target as HTMLVideoElement;
+              if (!isIntersecting) return v.pause();
+              if (!v.src && v.dataset.src) {
+                v.src = v.dataset.src;
+                v.addEventListener('playing', () => v.classList.add('is-ready'), { once: true });
+              }
+              v.play().catch(() => {});
+            }),
+          { rootMargin: '200px' },
+        );
+        document.querySelectorAll<HTMLVideoElement>('video.bg-video').forEach((v) => io.observe(v));
+      }
+
+      // Эффекты при наведении — только для мыши (на тач-экранах наведения нет).
+      const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+      if (finePointer && !reduce) {
+        // Курсор — кнопка плей. Едет за мышью с пружинкой и наклоняется по скорости.
+        // Над ссылками и кнопками становится кнопкой в кольце, над [data-cursor] — плашкой с подписью.
+        const cursor = document.querySelector<HTMLElement>('.cursor')!;
+        const body = cursor.querySelector<HTMLElement>('.cursor-body')!;
+        const label = cursor.querySelector<HTMLElement>('.cursor-label')!;
+        document.documentElement.classList.add('has-cursor');
+
+        let x = -100, y = -100, cx = -100, cy = -100, tilt = 0, raf = 0;
+        const follow = () => {
+          const dx = x - cx;
+          cx += dx * 0.22;
+          cy += (y - cy) * 0.22;
+          tilt += (Math.max(-25, Math.min(25, dx * 0.6)) - tilt) * 0.2;
+          cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+          body.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
+          raf = Math.abs(dx) + Math.abs(y - cy) + Math.abs(tilt) > 0.3 ? requestAnimationFrame(follow) : 0;
+        };
+        const kick = () => (raf ||= requestAnimationFrame(follow));
+
+        addEventListener('pointermove', (e) => {
+          if (e.pointerType !== 'mouse') return;
+          x = e.clientX;
+          y = e.clientY;
+          if (!cursor.classList.contains('is-visible')) {
+            cx = x;
+            cy = y;
+            cursor.classList.add('is-visible');
+          }
+          kick();
+
+          if (!(e.target instanceof Element)) return;
+          const target = e.target;
+          const labelled = target.closest<HTMLElement>('[data-cursor]');
+          const interactive = target.closest('a, button, [role="button"]');
+          cursor.classList.toggle('is-label', !!labelled);
+          cursor.classList.toggle('is-link', !labelled && !!interactive);
+          // На светлых местах (салатовые кнопки, стеклянная шапка) курсор тёмный, на тёмных кнопках шапки — салатовый.
+          const onLight =
+            !!target.closest('.btn-primary') ||
+            (!!target.closest('.topbar-pill, .mobile-menu') && !target.closest('.icon-btn, .tg-btn, .menu-btn'));
+          cursor.classList.toggle('is-ink', !labelled && onLight);
+          if (labelled) label.textContent = labelled.dataset.cursor!;
+        });
+        document.addEventListener('pointerleave', () => cursor.classList.remove('is-visible'));
+        addEventListener('pointerdown', () => cursor.classList.add('is-down'));
+        addEventListener('pointerup', () => cursor.classList.remove('is-down'));
+
+        // Лёгкий 3D-наклон обложки за курсором.
+        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => {
+          el.addEventListener('pointermove', (e) => {
+            const r = el.getBoundingClientRect();
+            const px = (e.clientX - r.left) / r.width - 0.5;
+            const py = (e.clientY - r.top) / r.height - 0.5;
+            el.style.setProperty('--rx', `${(-py * 6).toFixed(2)}deg`);
+            el.style.setProperty('--ry', `${(px * 6).toFixed(2)}deg`);
+            el.style.setProperty('--gx', `${((px + 0.5) * 100).toFixed(1)}%`);
+            el.style.setProperty('--gy', `${((py + 0.5) * 100).toFixed(1)}%`);
+          });
+          el.addEventListener('pointerleave', () => {
+            el.style.removeProperty('--rx');
+            el.style.removeProperty('--ry');
+          });
+        });
+      }
+
+      // Мобильное меню: кнопка-бургер, закрытие по ссылке, Esc и клику мимо.
+      const topbar = document.querySelector<HTMLElement>('.topbar')!;
+
+      // Зелёное свечение в шапке едет за курсором.
+      const pill = topbar.querySelector<HTMLElement>('.topbar-pill')!;
+      const glow = pill.querySelector<HTMLElement>('.pill-glow')!;
+      pill.addEventListener('pointermove', (e) => {
+        const r = pill.getBoundingClientRect();
+        glow.style.setProperty('--gx', `${e.clientX - r.left}px`);
+        glow.style.setProperty('--gy', `${e.clientY - r.top}px`);
+      });
+      const menuBtn = topbar.querySelector<HTMLButtonElement>('.menu-btn')!;
+      const setMenu = (open: boolean) => {
+        topbar.classList.toggle('is-menu', open);
+        menuBtn.setAttribute('aria-expanded', String(open));
+        menuBtn.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+      };
+      menuBtn.addEventListener('click', () => setMenu(!topbar.classList.contains('is-menu')));
+      topbar.querySelectorAll('.mobile-menu a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+      addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
+      document.addEventListener('click', (e) => {
+        if (!topbar.contains(e.target as Node)) setMenu(false);
+      });
+
+      // Фон из тёмно-зелёных точек на весь сайт. Точки медленно дрейфуют, расступаются кругом
+      // вокруг курсора и пружиной возвращаются; клик пускает волну. При reduced motion — неподвижная сетка.
+      {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'dots';
+        canvas.setAttribute('aria-hidden', 'true');
+        document.body.prepend(canvas);
+        const ctx = canvas.getContext('2d')!;
+        const interactive = finePointer && !reduce;
+        const light = matchMedia('(prefers-color-scheme: light)').matches;
+        const COLORS = light
+          ? ['rgb(70 100 10 / 0.28)', 'rgb(90 130 10 / 0.5)', 'rgb(110 150 0 / 0.75)']
+          : ['rgb(52 78 18 / 0.75)', 'rgb(110 160 30 / 0.85)', 'rgb(212 255 58 / 0.95)'];
+        const GAP = 26;
+        const DOT = 1.6;
+        const RADIUS = 110; // радиус «пустого» круга вокруг курсора
+        const DRIFT = 7; // насколько далеко точка уплывает от своего места, px
+
+        let w = 0, h = 0, dpr = 1, raf = 0;
+        let hx = new Float32Array(0), hy = hx, px = hx, py = hx, vx = hx, vy = hx;
+        let ph1 = hx, ph2 = hx, sp1 = hx, sp2 = hx;
+        let mx = -9999, my = -9999;
+        const waves: { x: number; y: number; r: number; life: number }[] = [];
+
+        const build = () => {
+          dpr = Math.min(devicePixelRatio || 1, 2);
+          w = innerWidth;
+          h = innerHeight;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
+          const cols = Math.ceil(w / GAP) + 1;
+          const rows = Math.ceil(h / GAP) + 1;
+          const n = cols * rows;
+          hx = new Float32Array(n); hy = new Float32Array(n);
+          px = new Float32Array(n); py = new Float32Array(n);
+          vx = new Float32Array(n); vy = new Float32Array(n);
+          ph1 = new Float32Array(n); ph2 = new Float32Array(n);
+          sp1 = new Float32Array(n); sp2 = new Float32Array(n);
+          const ox = (w - (cols - 1) * GAP) / 2;
+          const oy = (h - (rows - 1) * GAP) / 2;
+          for (let r = 0, i = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++, i++) {
+              hx[i] = px[i] = ox + c * GAP;
+              hy[i] = py[i] = oy + r * GAP;
+              // у каждой точки свой медленный ритм: период примерно 9–20 секунд
+              ph1[i] = Math.random() * Math.PI * 2;
+              ph2[i] = Math.random() * Math.PI * 2;
+              sp1[i] = (0.3 + Math.random() * 0.4) / 1000;
+              sp2[i] = (0.3 + Math.random() * 0.4) / 1000;
+            }
+          draw();
+        };
+
+        const draw = () => {
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, w, h);
+          // три яркости: спокойные — тёмно-зелёные, сдвинутые курсором или волной — светлее
+          const paths = [new Path2D(), new Path2D(), new Path2D()];
+          for (let i = 0; i < hx.length; i++) {
+            const sp = Math.abs(vx[i]) + Math.abs(vy[i]);
+            const off = Math.abs(px[i] - hx[i]) + Math.abs(py[i] - hy[i]) - DRIFT * 2; // сдвиг сверх дрейфа
+            const b = sp > 2.5 || off > 18 ? 2 : sp > 0.6 || off > 4 ? 1 : 0;
+            paths[b].moveTo(px[i] + DOT, py[i]);
+            paths[b].arc(px[i], py[i], DOT, 0, Math.PI * 2);
+          }
+          paths.forEach((p, b) => {
+            ctx.fillStyle = COLORS[b];
+            ctx.fill(p);
+          });
+        };
+
+        const step = (t: number) => {
+          for (const wv of waves) {
+            wv.r += 16;
+            wv.life--;
+          }
+          for (let i = waves.length - 1; i >= 0; i--) if (waves[i].life <= 0) waves.splice(i, 1);
+
+          for (let i = 0; i < hx.length; i++) {
+            // место, к которому точка тянется, само медленно плавает
+            const tx = hx[i] + Math.sin(t * sp1[i] + ph1[i]) * DRIFT;
+            const ty = hy[i] + Math.cos(t * sp2[i] + ph2[i]) * DRIFT;
+            let fx = (tx - px[i]) * 0.07;
+            let fy = (ty - py[i]) * 0.07;
+            const dx = px[i] - mx, dy = py[i] - my;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < RADIUS * RADIUS) {
+              const d = Math.sqrt(d2) || 1;
+              const push = (RADIUS - d) * 0.18;
+              fx += (dx / d) * push;
+              fy += (dy / d) * push;
+            }
+            for (const wv of waves) {
+              const ex = px[i] - wv.x, ey = py[i] - wv.y;
+              const d = Math.sqrt(ex * ex + ey * ey) || 1;
+              const band = Math.abs(d - wv.r);
+              if (band < 40) {
+                const k = (1 - band / 40) * (wv.life / 40) * 10;
+                fx += (ex / d) * k;
+                fy += (ey / d) * k;
+              }
+            }
+            vx[i] = (vx[i] + fx) * 0.72;
+            vy[i] = (vy[i] + fy) * 0.72;
+            px[i] += vx[i];
+            py[i] += vy[i];
+          }
+          draw();
+          raf = requestAnimationFrame(step);
+        };
+
+        build();
+        let rt = 0;
+        addEventListener('resize', () => {
+          clearTimeout(rt);
+          rt = window.setTimeout(build, 120);
+        });
+
+        if (!reduce) {
+          raf = requestAnimationFrame(step);
+          // в фоновой вкладке не считаем
+          document.addEventListener('visibilitychange', () => {
+            cancelAnimationFrame(raf);
+            if (!document.hidden) raf = requestAnimationFrame(step);
+          });
+        }
+
+        if (interactive) {
+          addEventListener('pointermove', (e) => {
+            if (e.pointerType !== 'mouse') return;
+            mx = e.clientX;
+            my = e.clientY;
+          });
+          document.addEventListener('pointerleave', () => {
+            mx = my = -9999;
+          });
+          addEventListener('pointerdown', (e) => {
+            if (e.pointerType !== 'mouse' || e.button !== 0) return;
+            waves.push({ x: e.clientX, y: e.clientY, r: 0, life: 40 });
+          });
+        }
+      }
+
+      // Искры разлетаются от курсора при клике на кейс, статью или кнопку.
+      if (finePointer && !reduce) {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'sparks';
+        canvas.setAttribute('aria-hidden', 'true');
+        document.body.append(canvas);
+        const ctx = canvas.getContext('2d')!;
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d4ff3a';
+        type S = { x: number; y: number; vx: number; vy: number; life: number; max: number; r: number };
+        const ss: S[] = [];
+        let dpr = 1, raf = 0;
+        const resize = () => {
+          dpr = Math.min(devicePixelRatio || 1, 2);
+          canvas.width = innerWidth * dpr;
+          canvas.height = innerHeight * dpr;
+        };
+        resize();
+        addEventListener('resize', resize);
+
+        const tick = () => {
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, innerWidth, innerHeight);
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = accent;
+          for (let i = ss.length - 1; i >= 0; i--) {
+            const s = ss[i];
+            if (++s.life >= s.max) {
+              ss.splice(i, 1);
+              continue;
+            }
+            const t = 1 - s.life / s.max;
+            s.vx *= 0.93;
+            s.vy = s.vy * 0.93 + 0.08;
+            s.x += s.vx;
+            s.y += s.vy;
+            const r = s.r * (0.3 + 0.7 * t);
+            ctx.globalAlpha = t * 0.3;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, r * 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = t;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          raf = ss.length ? requestAnimationFrame(tick) : 0;
+        };
+
+        addEventListener('pointerdown', (e) => {
+          if (e.pointerType !== 'mouse' || e.button !== 0) return;
+          if (!(e.target instanceof Element) || !e.target.closest('a, button, [data-cursor]')) return;
+          const { clientX: x, clientY: y } = e;
+          const count = 40;
+          for (let i = 0; i < count; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 2 + Math.random() * 8;
+            ss.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, life: 0, max: 35 + Math.random() * 35, r: 1.5 + Math.random() * 2.5 });
+          }
+          raf ||= requestAnimationFrame(tick);
+        });
+      }
+
+      // Плавное появление блоков при прокрутке.
+      if (!reduce) {
+        const items = document.querySelectorAll<HTMLElement>('.card, .section h2, .about-lead, .facts > div, .job, .contact-title');
+        const reveal = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-in');
+                reveal.unobserve(e.target);
+              }
+            }),
+          { rootMargin: '0px 0px -8% 0px' },
+        );
+        items.forEach((el) => {
+          el.classList.add('reveal');
+          reveal.observe(el);
+        });
+      }
+
+      const dialog = document.querySelector<HTMLDialogElement>('dialog.reel')!;
+      const player = dialog.querySelector('video')!;
+      document.querySelector('[data-open-reel]')?.addEventListener('click', () => {
+        if (!player.src) player.src = player.dataset.src!;
+        dialog.showModal();
+        player.play().catch(() => {});
+      });
+      const close = () => dialog.close();
+      dialog.querySelector('[data-close-reel]')?.addEventListener('click', close);
+      dialog.addEventListener('click', (e) => e.target === dialog && close());
+      dialog.addEventListener('close', () => player.pause());
+    </script>
+  </body>
+</html>

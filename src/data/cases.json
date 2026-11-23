@@ -1,0 +1,95 @@
+{
+  "_readme": "Кейсы с Behance. Ключ — ID проекта из ссылки behance.net/gallery/<ID>/... . title: название (RSS Behance ломает кириллицу). tag: метка на карточке. top: место в топе (1–6), без него кейс идёт в «Все работы». hidden: true — не показывать на сайте. image: своя обложка из public/covers вместо обложки с Behance. loop: mp4 из public/video, который играет на всю карточку вместо обложки. videos: пути к mp4 в public/video, которые крутятся на карточке поверх обложки. url и cover — запасные данные, если RSS недоступна при сборке.",
+  "cases": {
+    "229395949": {
+      "title": "3D-видео для t2",
+      "tag": "3D · Motion",
+      "top": 1,
+      "url": "https://www.behance.net/gallery/229395949/3D-video-dlja-t2",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/b2c21d229395949.Y3JvcCwxMjYzLDk4NywwLDA.png",
+      "date": "2025-07-01",
+      "loop": "/video/t2-card.mp4"
+    },
+    "254266703": {
+      "title": "Баннеры для ОТП Банка",
+      "tag": "KV · Motion-баннеры",
+      "top": 2,
+      "videos": [
+        "/video/otp-1.mp4",
+        "/video/otp-2.mp4"
+      ],
+      "url": "https://www.behance.net/gallery/254266703/bannery-dlja-otpbanka",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/5734c1254266703.Y3JvcCwxMzgwLDEwODAsMjcwLDA.png",
+      "date": "2026-08-14"
+    },
+    "203957449": {
+      "title": "3D visuals Alfa bank",
+      "tag": "3D Key visual",
+      "top": 3,
+      "url": "https://www.behance.net/gallery/203957449/Key-visuals-for-app",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/fbd1af203957449.Y3JvcCw3NTYsNTkxLDQ4OCwxMjc.jpg",
+      "date": "2024-07-24"
+    },
+    "200672141": {
+      "title": "Key Visual для сервиса МТС Kodify",
+      "tag": "Key visual",
+      "top": 4,
+      "url": "https://www.behance.net/gallery/200672141/Key-Visual-dlja-servisa-MTS-Kodify",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/9aef28200672141.Y3JvcCwzNDI3LDI2ODEsMCww.png",
+      "date": "2024-06-10"
+    },
+    "222397241": {
+      "title": "KV для идеи безопасного гида с Касперским",
+      "tag": "Key visual",
+      "top": 5,
+      "url": "https://www.behance.net/gallery/222397241/KV-dlja-idei-bezopasnogo-gida-s-kasperskim",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/60bea5222397241.Y3JvcCw5NTA0LDc0MzQsMjMsMA.jpg",
+      "date": "2025-03-27"
+    },
+    "192634707": {
+      "title": "Видеокарточки товаров бренда Ultra Balance",
+      "tag": "Motion · Маркетплейсы",
+      "top": 6,
+      "url": "https://www.behance.net/gallery/192634707/videokartochki-tovarov-brenda-Ultra-Balance",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/cb6c72192634707.Y3JvcCwyODc2LDIyNTAsNTYyLDA.jpg",
+      "date": "2024-02-28",
+      "image": "/covers/ultra-balance.jpg"
+    },
+    "258517577": {
+      "title": "Карточки WB: COSRX, Яндекс, Kitfort, Bombbar",
+      "tag": "Маркетплейсы",
+      "url": "https://www.behance.net/gallery/258517577/kartochki-WB-COSRX-jandeks-Kitfort-Bombbar",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/4d3532258517577.Y3JvcCwxNjE2LDEyNjQsMCww.jpg",
+      "date": "2026-11-15"
+    },
+    "256397253": {
+      "title": "Fake gameplay video",
+      "tag": "Motion",
+      "url": "https://www.behance.net/gallery/256397253/Fake-gameplay-video",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/206ac3256397253.Y3JvcCwxMDc4LDg0MywwLDEyMA.png",
+      "date": "2026-09-29"
+    },
+    "222167501": {
+      "title": "3D-логотип для «Фудсити»",
+      "tag": "3D",
+      "url": "https://www.behance.net/gallery/222167501/3D-logo-dlja-fudsiti",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/a88a41222167501.Y3JvcCwzMjAwLDI1MDIsMCw0Nw.png",
+      "date": "2025-03-24"
+    },
+    "189995063": {
+      "title": "Key visual для Альфа-Банка",
+      "tag": "3D Key visual",
+      "url": "https://www.behance.net/gallery/189995063/Key-visual-dlja-alfa-banka",
+      "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/6fe0bd189995063.Y3JvcCwzNDI3LDI2ODEsMCww.png",
+      "date": "2024-01-26"
+    },
+    "206904121": {
+      "title": "Тестовое для Т-Банка",
+      "hidden": true
+    },
+    "192334253": {
+      "title": "Бабушкин ковёр",
+      "hidden": true
+    }
+  }
+}
