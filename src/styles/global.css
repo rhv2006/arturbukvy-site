@@ -1495,8 +1495,10 @@ html:has(dialog[open]) .cursor {
   initial-value: 1px;
 }
 
+/* цвет текста не меняем: буквы делаем прозрачными через text-fill, а снизу рисуем их же цвет
+   (currentColor), поэтому собственные переходы цвета, как у компаний в «Опыте», продолжают работать */
 .text-glow {
-  color: transparent !important;
+  -webkit-text-fill-color: transparent;
   background-image:
     radial-gradient(
       ellipse var(--glow-r) calc(var(--glow-r) * 0.62) at var(--mx, 50%) var(--my, 50%),
@@ -1504,10 +1506,15 @@ html:has(dialog[open]) .cursor {
       var(--accent-text) 22%,
       transparent 100%
     ),
-    linear-gradient(var(--c), var(--c));
+    linear-gradient(currentColor, currentColor);
   -webkit-background-clip: text;
   background-clip: text;
-  transition: --glow-r 0.45s ease;
+  transition: --glow-r 0.45s ease !important;
+}
+
+/* ссылки внутри текста остаются своего цвета */
+.text-glow a {
+  -webkit-text-fill-color: currentColor;
 }
 
 .text-glow.is-glow {

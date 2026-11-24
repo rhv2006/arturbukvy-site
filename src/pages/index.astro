@@ -847,14 +847,15 @@ const dateRu = (iso: string) =>
           el.style.setProperty('--mx', `${e.clientX - r.left}px`);
           el.style.setProperty('--my', `${e.clientY - r.top}px`);
         };
+        const timers = new WeakMap<HTMLElement, number>();
         document.addEventListener('pointerover', (e) => {
           const el = (e.target as Element).closest<HTMLElement>(SEL);
           if (!el || el.classList.contains('is-glow')) return;
+          clearTimeout(timers.get(el));
           if (!el.classList.contains('text-glow')) {
             // элементы со своим фоном (кнопки, плашки) не трогаем: обрезка по тексту съела бы фон
             const cs = getComputedStyle(el);
             if (cs.backgroundImage !== 'none' || cs.backgroundColor !== clear) return;
-            el.style.setProperty('--c', cs.color);
             setPos(el, e);
             el.classList.add('text-glow');
             el.getBoundingClientRect(); // чтобы радиус вырос из нуля, а не появился сразу
@@ -869,10 +870,13 @@ const dateRu = (iso: string) =>
           const el = (e.target as Element).closest<HTMLElement>('.is-glow');
           if (!el || (e.relatedTarget instanceof Node && el.contains(e.relatedTarget))) return;
           el.classList.remove('is-glow');
-        });
-        document.addEventListener('transitionend', (e) => {
-          const el = e.target as HTMLElement;
-          if (el.classList?.contains('text-glow') && !el.classList.contains('is-glow')) el.classList.remove('text-glow');
+          // после затухания (0,45 с) возвращаем элементу обычный вид
+          timers.set(
+            el,
+            window.setTimeout(() => {
+              if (!el.classList.contains('is-glow')) el.classList.remove('text-glow');
+            }, 500),
+          );
         });
       }
     </script>
