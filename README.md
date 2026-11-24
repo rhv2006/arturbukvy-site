@@ -76,3 +76,5 @@ DNS — в Reg.ru: `A @ → 213.180.193.247` (адрес `website.yandexcloud.ne
 ## Превью ссылки (og:image)
 
 Картинка, которую Telegram, VK и другие показывают под ссылкой на сайт: экран «Обо мне» 1200×630. Исходник лежит в `og/og.html`. После правок соберите картинку командой `npm run og`: она запишется в `public/og.jpg`. Затем увеличьте `?v=` в `og:image` в `src/pages/index.astro`.
+
+www.артурбуквы.рф: бакет `www.xn--80acd5a2aanic6f.xn--p1ai` в режиме «Хостинг». В нём лежит одна страница `www-redirect/index.html`, она перекидывает посетителя на основной домен. В Reg.ru для него запись `CNAME www → www.xn--80acd5a2aanic6f.xn--p1ai.website.yandexcloud.net.`

@@ -50,3 +50,7 @@ jobs:
 
       - name: Remove stale hashed assets
         run: $S3 sync dist/_astro "s3://$BUCKET/_astro" --delete
+
+      # www.артурбуквы.рф: отдельный бакет с одной страницей-переадресацией на основной домен.
+      - name: Upload www redirect
+        run: $S3 cp www-redirect/index.html "s3://www.$BUCKET/index.html" --cache-control "public, max-age=3600"
