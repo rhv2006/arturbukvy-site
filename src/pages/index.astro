@@ -127,7 +127,23 @@ const dateRu = (iso: string) =>
     <header class="topbar">
       <div class="topbar-pill">
         <span class="pill-glow" aria-hidden="true"></span>
-        <a class="logo" href="#top">артурбуквы</a>
+        <a class="logo" href="#top" aria-label="артурбуквы">
+          <span class="lg" aria-hidden="true">
+            {
+              [...'артурбуквы'].map((ch, i, all) => (
+                <span class:list={['lg-l', { 'lg-first': i === 0, 'lg-last': i === all.length - 1 }]} style={`--i:${i}`}>
+                  <span class="lg-sizer">{ch}</span>
+                  <span class="lg-cube">
+                    <span class="lg-f lg-front">{ch}</span>
+                    <span class="lg-f lg-track" />
+                    <span class="lg-f lg-back">{ch}</span>
+                  </span>
+                </span>
+              ))
+            }
+            <span class="lg-head" />
+          </span>
+        </a>
         <nav class="topbar-nav" aria-label="Разделы">
           <a href="#work">Кейсы</a>
           <a href="#about">Обо мне</a>
@@ -792,6 +808,50 @@ const dateRu = (iso: string) =>
       dialog.querySelector('[data-close-reel]')?.addEventListener('click', close);
       dialog.addEventListener('click', (e) => e.target === dialog && close());
       dialog.addEventListener('close', () => player.pause());
+    </script>
+    <script>
+      // Заголовки и текст: под курсором в буквах проявляется размытый зелёный эллипс, как в плашке меню.
+      // Эллипс рисуется фоном, обрезанным по буквам (background-clip: text), поэтому фон вокруг текста не меняется.
+      // Только для мыши и без reduced motion.
+      const glowOk =
+        matchMedia('(hover: hover) and (pointer: fine)').matches &&
+        !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (glowOk) {
+        const SEL = 'main h1, main h2, main h3, main p, main dd, footer p';
+        const clear = 'rgba(0, 0, 0, 0)';
+        const setPos = (el: HTMLElement, e: PointerEvent) => {
+          const r = el.getBoundingClientRect();
+          el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+          el.style.setProperty('--my', `${e.clientY - r.top}px`);
+        };
+        document.addEventListener('pointerover', (e) => {
+          const el = (e.target as Element).closest<HTMLElement>(SEL);
+          if (!el || el.classList.contains('is-glow')) return;
+          if (!el.classList.contains('text-glow')) {
+            // элементы со своим фоном (кнопки, плашки) не трогаем: обрезка по тексту съела бы фон
+            const cs = getComputedStyle(el);
+            if (cs.backgroundImage !== 'none' || cs.backgroundColor !== clear) return;
+            el.style.setProperty('--c', cs.color);
+            setPos(el, e);
+            el.classList.add('text-glow');
+            el.getBoundingClientRect(); // чтобы радиус вырос из нуля, а не появился сразу
+          }
+          el.classList.add('is-glow');
+        });
+        document.addEventListener('pointermove', (e) => {
+          const el = (e.target as Element).closest<HTMLElement>('.text-glow');
+          if (el) setPos(el, e);
+        });
+        document.addEventListener('pointerout', (e) => {
+          const el = (e.target as Element).closest<HTMLElement>('.is-glow');
+          if (!el || (e.relatedTarget instanceof Node && el.contains(e.relatedTarget))) return;
+          el.classList.remove('is-glow');
+        });
+        document.addEventListener('transitionend', (e) => {
+          const el = e.target as HTMLElement;
+          if (el.classList?.contains('text-glow') && !el.classList.contains('is-glow')) el.classList.remove('text-glow');
+        });
+      }
     </script>
     <script>
       // Фото «Обо мне»: под курсором проявляется 3D-сетка. Рельеф берётся из яркости самого портрета,

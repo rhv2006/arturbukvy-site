@@ -1485,3 +1485,168 @@ html:has(dialog[open]) .cursor {
     display: inline;
   }
 }
+
+
+/* ---------- свечение текста под курсором ---------- */
+
+@property --glow-r {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1px;
+}
+
+.text-glow {
+  color: transparent !important;
+  background-image:
+    radial-gradient(
+      ellipse var(--glow-r) calc(var(--glow-r) * 0.62) at var(--mx, 50%) var(--my, 50%),
+      var(--accent-text) 0%,
+      var(--accent-text) 22%,
+      transparent 100%
+    ),
+    linear-gradient(var(--c), var(--c));
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: --glow-r 0.45s ease;
+}
+
+.text-glow.is-glow {
+  --glow-r: 150px;
+}
+
+/* ---------- логотип: буквы переворачиваются в дорожку таймлайна After Effects ---------- */
+
+.lg {
+  position: relative;
+  display: inline-flex;
+}
+
+.lg-l {
+  position: relative;
+  display: inline-block;
+  perspective: 14em;
+}
+
+.lg-sizer {
+  visibility: hidden;
+}
+
+.lg-cube {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: lg-flip 9s cubic-bezier(0.65, 0, 0.3, 1) calc(var(--i) * 55ms) infinite both;
+}
+
+.lg-f {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  backface-visibility: hidden;
+}
+
+.lg-front {
+  transform: translateZ(0.5em);
+}
+
+/* грань снизу: приезжает вперёд, когда буква поворачивается вверх */
+.lg-track {
+  transform: rotateX(-90deg) translateZ(0.5em);
+}
+
+.lg-back {
+  transform: rotateX(-180deg) translateZ(0.5em);
+}
+
+/* кусок зелёной полосы слоя; соседние куски сливаются в одну дорожку */
+.lg-track::before {
+  content: '';
+  position: absolute;
+  inset: 16% -0.5px;
+  background: var(--accent);
+  border-block: 1px solid rgb(0 0 0 / 0.28);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45);
+}
+
+.lg-first .lg-track::before {
+  left: 0;
+  border-left: 1px solid rgb(0 0 0 / 0.28);
+  border-radius: 3px 0 0 3px;
+}
+
+.lg-last .lg-track::before {
+  right: 0;
+  border-right: 1px solid rgb(0 0 0 / 0.28);
+  border-radius: 0 3px 3px 0;
+}
+
+/* указатель текущего кадра: едет по дорожке, будто нажали пробел */
+.lg-head {
+  position: absolute;
+  top: -0.32em;
+  bottom: -0.22em;
+  left: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px #141416;
+  opacity: 0;
+  animation: lg-play 9s linear infinite both;
+}
+
+.lg-head::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 9px;
+  height: 7px;
+  translate: -50% 0;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px #141416;
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+}
+
+@keyframes lg-flip {
+  0%,
+  40% {
+    transform: rotateX(0deg);
+  }
+  46%,
+  88% {
+    transform: rotateX(90deg);
+  }
+  94%,
+  100% {
+    transform: rotateX(180deg);
+  }
+}
+
+@keyframes lg-play {
+  0%,
+  52% {
+    left: 0;
+    opacity: 0;
+  }
+  53% {
+    left: 0;
+    opacity: 1;
+  }
+  85% {
+    left: 100%;
+    opacity: 1;
+  }
+  86.5%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-cube,
+  .lg-head {
+    animation: none;
+  }
+}
