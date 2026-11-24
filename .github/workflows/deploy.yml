@@ -3,7 +3,7 @@
 # с Behance и статьи с Teletype) и вручную кнопкой «Run workflow» на вкладке Actions.
 #
 # Нужны секреты репозитория (Settings → Secrets and variables → Actions):
-#   YC_ACCESS_KEY_ID, YC_SECRET_ACCESS_KEY — статический ключ сервисного аккаунта с ролью storage.editor.
+#   KEY_ID, SECRET_KEY — статический ключ сервисного аккаунта с ролью storage.editor.
 name: Deploy
 
 on:
@@ -22,8 +22,8 @@ concurrency:
 
 env:
   BUCKET: xn--80acd5a2aanic6f.xn--p1ai # артурбуквы.рф
-  AWS_ACCESS_KEY_ID: ${{ secrets.YC_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_SECRET_ACCESS_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
   AWS_DEFAULT_REGION: ru-central1
   S3: aws s3 --endpoint-url=https://storage.yandexcloud.net
 
