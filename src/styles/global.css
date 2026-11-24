@@ -227,11 +227,10 @@ ul {
   padding: 6px 6px 6px 20px;
   border-radius: 999px;
   color: #141416;
-  background: rgb(242 240 235 / 0.72);
+  background: rgb(242 240 235 / 0.62);
   border: 1px solid rgb(255 255 255 / 0.55);
   box-shadow: 0 10px 40px -12px rgb(0 0 0 / 0.45);
-  backdrop-filter: blur(22px) saturate(1.6);
-  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.8);
   pointer-events: auto;
 }
 
@@ -252,6 +251,7 @@ ul {
 /* пункт под курсором остаётся ярким, остальные бледнеют, как карточки кейсов */
 .topbar-nav a {
   position: relative;
+  white-space: nowrap;
   padding: 10px 14px;
   transition:
     opacity 0.35s,
@@ -441,8 +441,7 @@ ul {
   background: rgb(242 240 235 / 0.9);
   border: 1px solid rgb(255 255 255 / 0.55);
   box-shadow: 0 20px 50px -16px rgb(0 0 0 / 0.55);
-  backdrop-filter: blur(22px) saturate(1.6);
-  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.8);
   pointer-events: none;
   visibility: hidden;
   opacity: 0;
@@ -1458,5 +1457,31 @@ html:has(dialog[open]) .cursor {
   .card-media,
   .card-media img {
     transition: none;
+  }
+}
+
+/* Старый Safari (до 18) понимает только префиксную версию. Отдельный блок, иначе минификатор
+   склеивает её с обычной и выкидывает одну из двух. */
+@supports (-webkit-backdrop-filter: none) and (not (backdrop-filter: none)) {
+  .topbar-pill,
+  .mobile-menu {
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  }
+}
+
+/* узкий десктоп: полное меню и длинная кнопка Telegram не влезают в одну плашку */
+@media (min-width: 1000px) and (max-width: 1279px) {
+  .topbar-pill {
+    gap: 12px;
+    padding-left: 24px;
+  }
+  .topbar-nav {
+    gap: 0;
+  }
+  .tg-long {
+    display: none;
+  }
+  .tg-short {
+    display: inline;
   }
 }
