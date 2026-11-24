@@ -72,3 +72,7 @@ npm run resume
 Сайт лежит в бакете Yandex Object Storage `xn--80acd5a2aanic6f.xn--p1ai` (артурбуквы.рф) с включённым хостингом сайта и HTTPS-сертификатом из Certificate Manager.
 DNS — в Reg.ru: `A @ → 213.180.193.247` (адрес `website.yandexcloud.net`).
 Загрузкой занимается `.github/workflows/deploy.yml`: собирает сайт и синхронизирует `dist/` с бакетом. Ключ доступа хранится в секретах репозитория `KEY_ID` и `SECRET_KEY`.
+
+## Превью ссылки (og:image)
+
+Картинка, которую Telegram, VK и другие показывают под ссылкой на сайт: экран «Обо мне» 1200×630. Исходник лежит в `og/og.html`. После правок соберите картинку командой `npm run og`: она запишется в `public/og.jpg`. Затем увеличьте `?v=` в `og:image` в `src/pages/index.astro`.
