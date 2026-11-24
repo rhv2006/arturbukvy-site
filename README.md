@@ -45,14 +45,18 @@ npm run build    # сборка в dist/
 
 | файл | что это |
 |------|---------|
-| `reel-loop.mp4` + `reel-poster.jpg` | фон первого экрана: 6–21 с шоурила t2, без звука, ~1 МБ |
+| `reel-loop.mp4` + `reel-poster.jpg` | фон первого экрана: нарезка лучших кадров Showreel 2023 (`showreal.mp4`) без заставки, ~22 с, без звука, ~3 МБ |
 | `reel.mp4` | полный шоурил для кнопки «Смотреть шоурил», 1080p, ~11 МБ |
 | `otp-1.mp4`, `otp-2.mp4` | баннеры ОТП на карточке кейса |
 
 Исходники (`*.mp4` в корне проекта) в git не попадают. Пересжать после замены исходника:
 
 ```bash
-ffmpeg -ss 6 -t 15 -i "t2 showreal 1min.mp4" -an -vf scale=1280:-2 -c:v libx264 -preset slow -crf 30 -pix_fmt yuv420p -movflags +faststart public/video/reel-loop.mp4
+# фон: куски Showreel 2023 (секунды начала:конца), заставка «Showreel 2023» (0–3.4 с) пропущена
+segs="11.45:13.33 23.0:28.8 38.8:42.2 50.4:57.45 57.5:60 3.4:5.2"; f=; c=; i=0
+for s in $segs; do f="$f[0:v]trim=${s%:*}:${s#*:},setpts=PTS-STARTPTS,scale=1280:-2[v$i];"; c="$c[v$i]"; i=$((i+1)); done
+ffmpeg -i showreal.mp4 -filter_complex "${f}${c}concat=n=$i:v=1:a=0[out]" -map "[out]" -an -c:v libx264 -preset slow -crf 33 -pix_fmt yuv420p -movflags +faststart public/video/reel-loop.mp4
+ffmpeg -i public/video/reel-loop.mp4 -frames:v 1 -q:v 4 public/video/reel-poster.jpg
 ffmpeg -i "t2 showreal 1min.mp4" -c:v libx264 -preset slow -crf 26 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart public/video/reel.mp4
 ```
 
