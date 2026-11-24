@@ -18,6 +18,7 @@ const site = {
   behance: 'https://www.behance.net/rhv2006',
   automation: 'https://teletype.in/@rhv2006',
   reelVimeo: 'https://vimeo.com/1218208289',
+  resumePdf: '/fattakhov-resume.pdf',
 };
 
 // Работы не с Behance: идут последними в «Ещё работах». Если файла обложки в public/ ещё нет,
@@ -196,7 +197,7 @@ const dateRu = (iso: string) =>
       <section id="work" class="section wrap">
         <div class="section-head">
           <h2>Избранные работы</h2>
-          <a class="link" href={site.behance} target="_blank" rel="noopener">Все проекты на Behance ↗</a>
+          <a class="link link-accent" href={site.behance} target="_blank" rel="noopener">Все проекты на Behance ↗</a>
         </div>
         <ol class="grid-top">
           {
@@ -343,7 +344,7 @@ const dateRu = (iso: string) =>
       <section id="experience" class="section wrap experience">
         <div class="section-head">
           <h2>Опыт</h2>
-          <a class="link" href={site.hh} target="_blank" rel="noopener">Полное резюме на hh.ru ↗</a>
+          <a class="link link-accent" href={site.resumePdf} target="_blank" rel="noopener">Полное резюме, PDF ↗</a>
         </div>
         <ol class="timeline">
           {
@@ -376,7 +377,7 @@ const dateRu = (iso: string) =>
                   Как я убираю рутину из продакшена: скрипты для Illustrator, пакетный рендер в Cinema 4D, Python-боты.
                 </p>
               </div>
-              <a class="link" href={site.automation} target="_blank" rel="noopener">Все статьи на Teletype ↗</a>
+              <a class="link link-accent" href={site.automation} target="_blank" rel="noopener">Все статьи на Teletype ↗</a>
             </div>
             <ul class="articles">
               {articles.map((a) => (
@@ -411,6 +412,7 @@ const dateRu = (iso: string) =>
         </a>
         <ul class="contact-links">
           <li><a class="link" href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li><a class="link" href={site.resumePdf} target="_blank" rel="noopener">Резюме PDF ↗</a></li>
           <li><a class="link" href={site.hh} target="_blank" rel="noopener">Резюме на hh.ru ↗</a></li>
           <li><a class="link" href={site.behance} target="_blank" rel="noopener">Behance ↗</a></li>
         </ul>

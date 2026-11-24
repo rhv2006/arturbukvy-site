@@ -1,0 +1,464 @@
+<!doctype html>
+<!--
+  Исходник резюме в стиле сайта. PDF собирается командой `npm run resume`
+  (headless Chrome/Edge печатает эту страницу в public/fattakhov-resume.pdf).
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>Артур Фаттахов — резюме</title>
+<style>
+  @font-face {
+    font-family: 'Unbounded';
+    font-weight: 200 900;
+    src: url('../node_modules/@fontsource-variable/unbounded/files/unbounded-cyrillic-wght-normal.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+  }
+  @font-face {
+    font-family: 'Unbounded';
+    font-weight: 200 900;
+    src: url('../node_modules/@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Manrope';
+    font-weight: 200 800;
+    src: url('../node_modules/@fontsource-variable/manrope/files/manrope-cyrillic-wght-normal.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+  }
+  @font-face {
+    font-family: 'Manrope';
+    font-weight: 200 800;
+    src: url('../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
+  :root {
+    --bg: #0b0b0d;
+    --surface: #151518;
+    --line: #2a2a2f;
+    --text: #f2f2f0;
+    --muted: #9a9a9f;
+    --accent: #d4ff3a;
+  }
+
+  @page { size: A4; margin: 0; }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 9.6pt;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* фон и поля на каждой странице: фиксированная подложка + отступы через таблицу-обёртку */
+  .bg {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(212, 255, 58, 0.10), transparent 40%),
+      radial-gradient(circle, rgba(212, 255, 58, 0.10) 0.8px, transparent 1px) 0 0 / 7mm 7mm,
+      var(--bg);
+    z-index: -1;
+  }
+
+  table.page { width: 100%; border-collapse: collapse; }
+  table.page > thead td { height: 14mm; }
+  table.page > tfoot td { height: 14mm; }
+  table.page > tbody > tr > td { padding: 0 16mm; }
+
+  a { color: inherit; text-decoration: none; }
+
+  h1, h2, h3 { font-family: 'Unbounded', sans-serif; margin: 0; font-weight: 600; }
+
+  /* ---------- шапка ---------- */
+  .head {
+    display: grid;
+    grid-template-columns: 1fr 44mm;
+    gap: 10mm;
+    align-items: end;
+    padding-bottom: 8mm;
+    border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 9mm;
+  }
+  .logo b { color: var(--accent); font-weight: 600; }
+  h1 { font-size: 30pt; line-height: 1.02; letter-spacing: -0.02em; }
+  .role {
+    margin-top: 4mm;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12.5pt;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .meta { margin-top: 3mm; color: var(--muted); }
+  .photo {
+    width: 44mm;
+    height: 44mm;
+    border-radius: 4mm;
+    object-fit: cover;
+    display: block;
+  }
+
+  .contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2mm;
+    margin: 6mm 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .contacts a {
+    display: inline-block;
+    padding: 1.6mm 3.6mm;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 8.8pt;
+  }
+  .contacts a.main { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  /* ---------- разделы ---------- */
+  section { margin-top: 7mm; }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+    font-size: 13pt;
+    margin-bottom: 4mm;
+  }
+  h2::before {
+    content: '';
+    width: 2.4mm;
+    height: 2.4mm;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 3mm rgba(212, 255, 58, 0.8);
+  }
+
+  .lead { font-size: 11pt; line-height: 1.45; margin: 0 0 3mm; }
+  p { margin: 0 0 2.4mm; }
+  .muted { color: var(--muted); }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3mm;
+    margin-top: 5mm;
+  }
+  .fact {
+    padding: 4mm;
+    border-radius: 3mm;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .fact b {
+    display: block;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 15pt;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1.1;
+    margin-bottom: 1.5mm;
+  }
+  .fact span { font-size: 8.2pt; color: var(--muted); line-height: 1.35; display: block; }
+
+  /* ---------- опыт ---------- */
+  .job {
+    display: grid;
+    grid-template-columns: 34mm 1fr;
+    gap: 6mm;
+    padding: 4.5mm 0;
+    border-top: 1px solid var(--line);
+  }
+  .job > div:last-child > :first-child { break-after: avoid; }
+  .pos, h2 { break-after: avoid; }
+  ul.dots li, .result { break-inside: avoid; }
+  .job:first-of-type { border-top: 0; padding-top: 0; }
+  .when { color: var(--muted); font-size: 8.6pt; line-height: 1.4; }
+  .when b { display: block; color: var(--text); font-weight: 600; }
+  h3 { font-size: 10.5pt; line-height: 1.3; }
+  .pos { color: var(--accent); font-weight: 700; margin: 0.8mm 0 2mm; }
+  ul.dots { margin: 0; padding: 0; list-style: none; }
+  ul.dots li { position: relative; padding-left: 4.5mm; margin-bottom: 1.4mm; }
+  ul.dots li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 1.5mm;
+    height: 1.5mm;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .result {
+    margin-top: 2.4mm;
+    padding: 2.6mm 3.6mm;
+    border-left: 2px solid var(--accent);
+    background: rgba(212, 255, 58, 0.06);
+    border-radius: 0 2mm 2mm 0;
+  }
+  .result b { color: var(--accent); }
+
+  /* ---------- навыки ---------- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+  .chips { display: flex; flex-wrap: wrap; gap: 1.6mm; margin: 0; padding: 0; list-style: none; }
+  .chips li {
+    padding: 1.2mm 3mm;
+    border-radius: 99px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 8.6pt;
+    font-weight: 600;
+  }
+  .label {
+    font-size: 7.6pt;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 2mm;
+  }
+  .label + .chips { margin-bottom: 4mm; }
+
+  .edu div { margin-bottom: 2.4mm; break-inside: avoid; }
+  .edu b { color: var(--text); }
+
+  .cta {
+    margin-top: 8mm;
+    padding: 6mm 7mm;
+    border-radius: 4mm;
+    background: var(--accent);
+    color: var(--bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    break-inside: avoid;
+  }
+  .cta h3 { font-size: 13pt; }
+  .cta p { margin: 1mm 0 0; font-weight: 600; }
+  .cta .arrow { font-family: 'Unbounded', sans-serif; font-size: 26pt; line-height: 1; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<table class="page">
+<thead><tr><td></td></tr></thead>
+<tfoot><tr><td></td></tr></tfoot>
+<tbody><tr><td>
+
+<header class="head">
+  <div>
+    <div class="logo">артур<b>буквы</b>.рф</div>
+    <h1>Артур<br />Фаттахов</h1>
+    <div class="role">3D, motion и key visual дизайнер</div>
+    <div class="meta">Уфа · удалённо · проектная работа и частичная занятость</div>
+  </div>
+  <img class="photo" src="../public/artur.jpg" alt="" />
+</header>
+
+<ul class="contacts">
+  <li><a class="main" href="https://t.me/Arturbukvi">Telegram @Arturbukvi</a></li>
+  <li><a href="mailto:rhv2006@gmail.com">rhv2006@gmail.com</a></li>
+  <li><a href="https://xn--80acd5a2aanic6f.xn--p1ai">артурбуквы.рф</a></li>
+  <li><a href="https://www.behance.net/rhv2006">behance.net/rhv2006</a></li>
+  <li><a href="https://teletype.in/@rhv2006">teletype.in/@rhv2006</a></li>
+</ul>
+
+<section>
+  <h2>Обо мне</h2>
+  <p class="lead">
+    Дизайнер с 14-летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
+  </p>
+  <p class="muted">
+    Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса, в Cinema 4D, Redshift, Blender и
+    Unreal Engine 5. Делаю 3D-ролики для мобильных игр, в том числе рекламные fake gameplay. Веду CGI-ролики под ключ:
+    идея, сценарий, сториборд, 3D-продакшен, композитинг. Ускоряю продакшен нейросетями и автоматизацией на Python.
+  </p>
+  <div class="facts">
+    <div class="fact"><b>14 лет</b><span>в дизайне: от препресса до CGI-роликов</span></div>
+    <div class="fact"><b>17 000+</b><span>экранов t2 по России крутят мои 20+ роликов</span></div>
+    <div class="fact"><b>30+</b><span>3D key visual для промо приложения Альфа-Банка</span></div>
+    <div class="fact"><b>×4</b><span>быстрее сборка однотипных макетов с моим скриптом</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Опыт</h2>
+
+  <div class="job">
+    <div class="when"><b>Авг 2024 — сейчас</b>2 года 1 месяц</div>
+    <div>
+      <h3>pronew</h3>
+      <div class="pos">Дизайнер · 3D и motion</div>
+      <ul class="dots">
+        <li>Продюсирую CGI-ролики под ключ: идея → сценарий → сториборд → 3D-продакшен → композитинг.</li>
+        <li>Адаптирую key visual и motion-графику под 15+ форматов: DOOH, POSM, соцсети, web pre-roll, 9:16.</li>
+        <li>Разработал и опубликовал 30+ SMM-постов и motion-видео для аудитории «Фудсити» 200 000+ человек.</li>
+        <li>Настраиваю пайплайн Redshift / After Effects, контролирую тайминг рендеров и версии ассетов.</li>
+      </ul>
+      <div class="result">
+        <b>20+ роликов для t2</b> крутятся на 17 000+ цифровых экранах сети по всей России.
+        Скрипт автоматизации, написанный с ChatGPT, ускорил сборку однотипных макетов <b>в 4 раза</b>.
+      </div>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when"><b>Ноя 2023 — июн 2024</b>8 месяцев</div>
+    <div>
+      <h3>Альфа-Банк</h3>
+      <div class="pos">3D-художник · Key visual (проектно)</div>
+      <ul class="dots">
+        <li>Разрабатывал концепты и 3D key visual для промо-кампании мобильного приложения.</li>
+        <li>Полный цикл CGI: идея → скетч → моделинг → шейдинг → свет → рендер → композитинг.</li>
+        <li>Собирал финальные пакеты под 25 форматов.</li>
+      </ul>
+      <div class="result">
+        <b>30+ 3D key visual</b> в высоком разрешении. 30 % концептов сгенерированы в Midjourney и доведены
+        до финального CGI-качества — этап идей стал <b>в 2 раза быстрее</b>.
+      </div>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when"><b>Янв 2023 — фев 2024</b>1 год 2 месяца</div>
+    <div>
+      <h3>СБИС</h3>
+      <div class="pos">UI/UX-дизайнер</div>
+      <ul class="dots">
+        <li>Полный UI-апгрейд маркетплейса: главное меню, карточка товара, корзина. Кликов до оплаты стало 4 вместо 7, глубина просмотра выросла на 38 %.</li>
+        <li>Дизайн-система из 120+ компонентов в Figma: атомы → молекулы → шаблоны.</li>
+        <li>30+ CG-сцен для 3D-витрин топ-категорий (Cinema 4D + Redshift).</li>
+        <li>Модуль «Быстрый заказ»: лайт-чекаут в один экран.</li>
+      </ul>
+      <div class="result">
+        3D-баннеры: <b>CTR 3,2 %</b> против 1,8 % у статичных. Конверсия мобильных пользователей после
+        «Быстрого заказа» — <b>+14 п. п.</b> за 30 дней по Метрике.
+      </div>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when"><b>Июн 2022 — сен 2022</b>4 месяца</div>
+    <div>
+      <h3>ojo · Finexware</h3>
+      <div class="pos">Дизайнер продукта</div>
+      <ul class="dots">
+        <li>С нуля выстроил пользовательский поток мобильной инвест-платформы Finex: исследование сценариев → CJM → wireframes.</li>
+        <li>60+ экранов (онбординг, KYC, портфель, сделка, отчётность) в интерактивном прототипе для тестов.</li>
+        <li>Маркетинговый сайт Finexware (desktop + mobile), библиотека из ≈25 изометрических иллюстраций и 30 пиктограмм.</li>
+        <li>Дизайн-система в Figma (auto-layout, variables, компонентная сетка) и hand-off для разработки.</li>
+      </ul>
+      <div class="result">
+        <b>80+ экранов и компонентов</b> ушли в вёрстку без доработок. Сборка следующих промостраниц стала
+        быстрее <b>примерно на треть</b>.
+      </div>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when"><b>Окт 2020 — янв 2022</b>1 год 4 месяца</div>
+    <div>
+      <h3>РН-УфаНИПИнефть (Роснефть)</h3>
+      <div class="pos">Графический дизайнер</div>
+      <ul class="dots">
+        <li>Визуальные пакеты для корпоративных событий под ключ: сцена, навигация, презентации, бейджи, сувенирка.</li>
+        <li>Адаптация под печатные баннеры, LED-экраны и e-mail-рассылки.</li>
+        <li>Набор из 120+ пиктограмм в едином стиле для внутренних ИТ-систем и обучающих материалов.</li>
+        <li>Инфографика из технических отчётов и KPI, полный препресс: цветопроба, шрифты, допуски.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when"><b>Июл 2018 — янв 2020</b>1 год 7 месяцев</div>
+    <div>
+      <h3>rechi media</h3>
+      <div class="pos">SMM-дизайнер</div>
+      <ul class="dots">
+        <li>Визуальный контент для соцсетей SmartyKids, Samocat Sharing, DeliLabs, Petroglyph: сетки постов, сторис, motion-ролики.</li>
+        <li>Иллюстрации и изометрические сцены от скетча до рендера, промо-лендинги Samocat Sharing и DeliLabs.</li>
+        <li>Samocat Sharing — 40+ постов и серия motion-сторис; SmartyKids — перезапуск стиля; DeliLabs — 48+ постов и лендинг с нуля.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when"><b>2011 — 2018</b>7 лет</div>
+    <div>
+      <h3>Фриланс и агентства</h3>
+      <div class="pos">Графический и веб-дизайнер</div>
+      <ul class="dots">
+        <li><b>Фриланс</b> (2015–2018): сайты, логотипы, оформление сообществ ВКонтакте.</li>
+        <li><b>Академия своего дела</b> (2013–2015): посадочные страницы для вебинаров и тренингов, полиграфия.</li>
+        <li><b>Рекламное агентство «РА»</b> (2011–2013): наружная реклама, печать, препресс и постпресс.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Навыки</h2>
+  <div class="grid2">
+    <div>
+      <p class="label">3D и motion</p>
+      <ul class="chips">
+        <li>Cinema 4D</li><li>Redshift</li><li>Blender</li><li>Unreal Engine 5</li><li>After Effects</li>
+      </ul>
+      <p class="label">Графика и UI</p>
+      <ul class="chips">
+        <li>Photoshop</li><li>Illustrator</li><li>InDesign</li><li>Figma</li><li>CorelDRAW</li><li>Препресс</li><li>Python</li>
+      </ul>
+    </div>
+    <div>
+      <p class="label">Нейросети: изображения</p>
+      <ul class="chips">
+        <li>Flux 2 Pro</li><li>Nano Banana Pro</li><li>Midjourney</li><li>Mystic</li><li>Imagen 4</li><li>Seedream 4.5</li><li>Ideogram</li><li>Recraft V4</li>
+      </ul>
+      <p class="label">Нейросети: видео</p>
+      <ul class="chips">
+        <li>Veo 3.1</li><li>Kling 3.0</li><li>Sora 2 Pro</li><li>PixVerse 5.5</li><li>Hailuo 2.3</li><li>Seedance 1.5 Pro</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Образование</h2>
+  <div class="grid2 edu">
+    <div>
+      <div><b>МГГУ им. Шолохова, 2013</b><br /><span class="muted">Высшее, графический дизайн</span></div>
+      <div><b>Художественная школа № 1, 2005</b></div>
+    </div>
+    <div>
+      <div><b>Богемика</b> <span class="muted">· скетчинг (2015), типографика и вёрстка (2014)</span></div>
+      <div><b>Synergy</b> <span class="muted">· продвижение в соцсетях, тренинг Дамира Халилова (2014)</span></div>
+      <div><span class="muted">Языки:</span> русский — родной, английский — A1</div>
+    </div>
+  </div>
+</section>
+
+<a class="cta" href="https://xn--80acd5a2aanic6f.xn--p1ai">
+  <div>
+    <h3>Кейсы и шоурил — на артурбуквы.рф</h3>
+    <p>Telegram @Arturbukvi · rhv2006@gmail.com</p>
+  </div>
+  <div class="arrow">↗</div>
+</a>
+
+</td></tr></tbody>
+</table>
+</body>
+</html>

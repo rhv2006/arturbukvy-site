@@ -6,6 +6,8 @@
   --muted: #9b9a96;
   --accent: #d4ff3a;
   --accent-ink: #0b0b0d;
+  /* акцент для текста: на светлой теме лайм нечитаем, там тёмно-зелёный */
+  --accent-text: var(--accent);
   --radius: 14px;
   /* как у референса: почти на всю ширину, отступ 40px; потолок только для сверхшироких мониторов */
   --wrap: 2400px;
@@ -23,6 +25,7 @@
     --text: #121214;
     --muted: #5f5e5a;
     --accent: #c2f000;
+    --accent-text: #4a7300;
     color-scheme: light;
   }
 }
@@ -177,6 +180,21 @@ ul {
 }
 
 .link:hover {
+  border-color: var(--accent);
+}
+
+/* заметные ссылки «Все проекты», «Полное резюме», «Все статьи»: зелёные и крупнее */
+.link-accent {
+  color: var(--accent-text);
+  border-bottom-color: currentColor;
+  font-family: var(--display);
+  font-size: clamp(16px, 1.5vw, 20px);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.link-accent:hover {
+  color: var(--text);
   border-color: var(--accent);
 }
 
@@ -611,7 +629,7 @@ ul {
   margin-bottom: 40px;
 }
 
-.section-head .link {
+.section-head .link:not(.link-accent) {
   color: var(--muted);
 }
 

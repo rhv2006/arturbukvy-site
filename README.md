@@ -57,3 +57,12 @@ ffmpeg -i "t2 showreal 1min.mp4" -c:v libx264 -preset slow -crf 26 -pix_fmt yuv4
 ```
 
 Видео на карточке кейса подключается полем `videos` в `cases.json`.
+
+## Резюме PDF
+
+Резюме в стиле сайта лежит в `public/fattakhov-resume.pdf`, ссылка «Полное резюме, PDF» в блоке «Опыт» и в контактах ведёт на него.
+Исходник — `resume/resume.html`. После правок пересоберите PDF (нужен установленный Chrome или Edge) и закоммитьте его:
+
+```bash
+npm run resume
+```
