@@ -810,6 +810,29 @@ const dateRu = (iso: string) =>
       dialog.addEventListener('close', () => player.pause());
     </script>
     <script>
+      // Логотип: кроме автоповтора раз в 9 секунд, анимация запускается сразу при наведении и по тапу.
+      // Все части (буквы и указатель кадра) переводятся в момент начала переворота; задержки букв
+      // сохраняются, поэтому они по-прежнему переворачиваются по очереди.
+      const logo = document.querySelector<HTMLElement>('.logo');
+      const CYCLE = 9000;
+      const FLIP_AT = CYCLE * 0.4; // в keyframes переворот начинается на 40%
+      if (logo && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const parts = () =>
+          logo.getAnimations({ subtree: true }).filter((a) => (a as CSSAnimation).animationName?.startsWith('lg-'));
+        const play = () => {
+          const anims = parts();
+          if (!anims.length) return;
+          const t = Number(anims[0].currentTime ?? 0) % CYCLE;
+          if (t >= FLIP_AT - 100) return; // уже идёт — не дёргаем на середине
+          anims.forEach((a) => (a.currentTime = FLIP_AT));
+        };
+        logo.addEventListener('pointerenter', (e) => {
+          if (e.pointerType === 'mouse') play();
+        });
+        logo.addEventListener('pointerdown', play);
+      }
+    </script>
+    <script>
       // Заголовки и текст: под курсором в буквах проявляется размытый зелёный эллипс, как в плашке меню.
       // Эллипс рисуется фоном, обрезанным по буквам (background-clip: text), поэтому фон вокруг текста не меняется.
       // Только для мыши и без reduced motion.
