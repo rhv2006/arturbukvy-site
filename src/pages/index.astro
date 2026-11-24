@@ -110,6 +110,8 @@ const dateRu = (iso: string) =>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0b0b0d" />
     <title>{site.name} — {site.role}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -580,10 +582,7 @@ const dateRu = (iso: string) =>
         document.body.prepend(canvas);
         const ctx = canvas.getContext('2d')!;
         const interactive = finePointer && !reduce;
-        const light = matchMedia('(prefers-color-scheme: light)').matches;
-        const COLORS = light
-          ? ['rgb(70 100 10 / 0.28)', 'rgb(90 130 10 / 0.5)', 'rgb(110 150 0 / 0.75)']
-          : ['rgb(52 78 18 / 0.75)', 'rgb(110 160 30 / 0.85)', 'rgb(212 255 58 / 0.95)'];
+        const COLORS = ['rgb(52 78 18 / 0.75)', 'rgb(110 160 30 / 0.85)', 'rgb(212 255 58 / 0.95)'];
         const GAP = 26;
         const DOT = 1.6;
         const RADIUS = 110; // радиус «пустого» круга вокруг курсора

@@ -6,7 +6,7 @@
   --muted: #9b9a96;
   --accent: #d4ff3a;
   --accent-ink: #0b0b0d;
-  /* акцент для текста: на светлой теме лайм нечитаем, там тёмно-зелёный */
+  /* сайт всегда тёмный, светлой темы нет */
   --accent-text: var(--accent);
   --radius: 14px;
   /* как у референса: почти на всю ширину, отступ 40px; потолок только для сверхшироких мониторов */
@@ -15,19 +15,6 @@
   --display: 'Unbounded Variable', system-ui, sans-serif;
   --body: 'Manrope Variable', system-ui, sans-serif;
   color-scheme: dark;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    --bg: #f4f2ed;
-    --surface: #ffffff;
-    --line: #dcd9d2;
-    --text: #121214;
-    --muted: #5f5e5a;
-    --accent: #c2f000;
-    --accent-text: #4a7300;
-    color-scheme: light;
-  }
 }
 
 *,
@@ -981,13 +968,6 @@ html:has(dialog[open]) .cursor {
   color: var(--accent);
 }
 
-@media (prefers-color-scheme: light) {
-  .arrow,
-  .card a:hover .num {
-    color: var(--text);
-  }
-}
-
 .tag {
   margin: 6px 0 0;
   font-size: 14px;
@@ -1158,12 +1138,6 @@ html:has(dialog[open]) .cursor {
   background: var(--accent);
 }
 
-@media (prefers-color-scheme: light) {
-  .job-points li::before {
-    background: var(--text);
-  }
-}
-
 .edu {
   margin: 24px 0 0;
   font-size: 15px;
@@ -1296,12 +1270,6 @@ html:has(dialog[open]) .cursor {
 .facts dt {
   font: 600 clamp(28px, 3vw, 38px)/1 var(--display);
   color: var(--accent);
-}
-
-@media (prefers-color-scheme: light) {
-  .facts dt {
-    color: var(--text);
-  }
 }
 
 .facts dd {
