@@ -1,6 +1,9 @@
-# Сборка и публикация сайта на GitHub Pages.
+# Сборка сайта и загрузка в бакет Yandex Object Storage (хостинг в России, открывается без VPN).
 # Запускается при каждом пуше в main, раз в сутки по расписанию (чтобы подтянуть новые кейсы
 # с Behance и статьи с Teletype) и вручную кнопкой «Run workflow» на вкладке Actions.
+#
+# Нужны секреты репозитория (Settings → Secrets and variables → Actions):
+#   YC_ACCESS_KEY_ID, YC_SECRET_ACCESS_KEY — статический ключ сервисного аккаунта с ролью storage.editor.
 name: Deploy
 
 on:
@@ -12,15 +15,20 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: false
 
+env:
+  BUCKET: xn--80acd5a2aanic6f.xn--p1ai # артурбуквы.рф
+  AWS_ACCESS_KEY_ID: ${{ secrets.YC_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: ru-central1
+  S3: aws s3 --endpoint-url=https://storage.yandexcloud.net
+
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,16 +38,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      # Файлы в _astro с хешем в имени не меняются — браузер может хранить их год.
+      - name: Upload hashed assets
+        run: $S3 sync dist/_astro "s3://$BUCKET/_astro" --cache-control "public, max-age=31536000, immutable"
+
+      # Остальное (страница, видео, обложки, резюме) — короткий кеш, чтобы правки появлялись быстро.
+      # --delete убирает из бакета файлы, которых больше нет в сборке.
+      - name: Upload site
+        run: $S3 sync dist "s3://$BUCKET" --exclude "_astro/*" --cache-control "public, max-age=300" --delete
+
+      - name: Remove stale hashed assets
+        run: $S3 sync dist/_astro "s3://$BUCKET/_astro" --delete

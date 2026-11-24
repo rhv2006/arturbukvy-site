@@ -66,3 +66,9 @@ ffmpeg -i "t2 showreal 1min.mp4" -c:v libx264 -preset slow -crf 26 -pix_fmt yuv4
 ```bash
 npm run resume
 ```
+
+## Хостинг
+
+Сайт лежит в бакете Yandex Object Storage `xn--80acd5a2aanic6f.xn--p1ai` (артурбуквы.рф) с включённым хостингом сайта и HTTPS-сертификатом из Certificate Manager.
+DNS — в Reg.ru: `A @ → 213.180.193.247` (адрес `website.yandexcloud.net`).
+Загрузкой занимается `.github/workflows/deploy.yml`: собирает сайт и синхронизирует `dist/` с бакетом. Ключ доступа хранится в секретах репозитория `YC_ACCESS_KEY_ID` и `YC_SECRET_ACCESS_KEY`.
