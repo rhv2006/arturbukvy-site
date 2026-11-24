@@ -840,7 +840,7 @@ const dateRu = (iso: string) =>
         matchMedia('(hover: hover) and (pointer: fine)').matches &&
         !matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (glowOk) {
-        const SEL = 'main h1, main h2, main h3, main p, main dd, footer p';
+        const SEL = 'main h1, main h2, main h3, main p, main dd, .job-points li, footer p';
         const clear = 'rgba(0, 0, 0, 0)';
         const setPos = (el: HTMLElement, e: PointerEvent) => {
           const r = el.getBoundingClientRect();

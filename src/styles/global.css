@@ -1130,17 +1130,6 @@ html:has(dialog[open]) .cursor {
 
 .job h3 {
   font-size: clamp(22px, 2.4vw, 30px);
-  transition: color 0.3s;
-}
-
-.job:hover h3 {
-  color: var(--accent);
-}
-
-@media (prefers-color-scheme: light) {
-  .job:hover h3 {
-    color: inherit;
-  }
 }
 
 .job-role {
@@ -1503,7 +1492,7 @@ html:has(dialog[open]) .cursor {
     radial-gradient(
       ellipse var(--glow-r) calc(var(--glow-r) * 0.62) at var(--mx, 50%) var(--my, 50%),
       var(--accent-text) 0%,
-      var(--accent-text) 22%,
+      var(--accent-text) 12%,
       transparent 100%
     ),
     linear-gradient(currentColor, currentColor);
@@ -1517,8 +1506,9 @@ html:has(dialog[open]) .cursor {
   -webkit-text-fill-color: currentColor;
 }
 
+/* размер в em: на крупном заголовке эллипс больше, на мелком тексте меньше, но всегда — пара букв */
 .text-glow.is-glow {
-  --glow-r: 150px;
+  --glow-r: 2.4em;
 }
 
 /* ---------- логотип: буквы переворачиваются в дорожку таймлайна After Effects ---------- */
