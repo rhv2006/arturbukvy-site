@@ -39,10 +39,27 @@ function excerpt(text: string, max = 180) {
   return cut.slice(0, cut.lastIndexOf(' ')) + '…';
 }
 
+// Teletype периодически отвечает 524 (таймаут Cloudflare) — пробуем несколько раз, прежде чем брать кэш
+async function fetchFeed(tries = 3): Promise<string> {
+  let last: Error = new Error('Teletype RSS: нет ответа');
+  for (let i = 0; i < tries; i++) {
+    try {
+      const res = await fetch(FEED, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (arturbukvy-site build)' },
+        signal: AbortSignal.timeout(20000),
+      });
+      if (res.ok) return await res.text();
+      last = new Error(`Teletype RSS: HTTP ${res.status}`);
+    } catch (err) {
+      last = err as Error;
+    }
+    await new Promise((r) => setTimeout(r, 2000 * (i + 1)));
+  }
+  throw last;
+}
+
 async function fromFeed(): Promise<Article[]> {
-  const res = await fetch(FEED, { headers: { 'User-Agent': 'Mozilla/5.0 (arturbukvy-site build)' } });
-  if (!res.ok) throw new Error(`Teletype RSS: HTTP ${res.status}`);
-  const xml = await res.text();
+  const xml = await fetchFeed();
   const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]);
   if (!items.length) throw new Error('Teletype RSS: пустая лента');
 

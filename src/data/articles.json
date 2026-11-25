@@ -4,31 +4,39 @@
   "hidden": [],
   "cache": [
     {
-      "id": "5_4evRjEqCe",
-      "title": "Минус 80% рутины на ресайзах: Как я заавтоматизировал верстку для T2 с помощью ExtendScript",
-      "url": "https://teletype.in/@rhv2006/5_4evRjEqCe",
-      "cover": "https://img3.teletype.in/files/21/72/21720210-d84b-43bf-a4c3-645cd736b6a1.png",
-      "date": "2026-08-14"
-    },
-    {
-      "id": "hKFw6GKi-yF",
-      "title": "«Больше никаких 1000 кликов»: Как я заставил C4D рендерить сотни конфигураций без человека",
-      "url": "https://teletype.in/@rhv2006/hKFw6GKi-yF",
-      "cover": "https://img1.teletype.in/files/03/19/03196195-cf07-49dc-be02-9aee05b59f1d.png",
-      "date": "2026-08-14"
-    },
-    {
-      "id": "ZN7TeEHCqY3",
-      "title": "Как я написал бота, который ищет мне вакансии, пока я сплю",
-      "url": "https://teletype.in/@rhv2006/ZN7TeEHCqY3",
-      "cover": "https://img3.teletype.in/files/2f/4b/2f4bb919-39a0-4e42-b0a3-0019c11f04e7.jpeg",
-      "date": "2026-08-19"
+      "id": "iW3iUgTsuLd",
+      "title": "Vacancysos: как скрипт для поиска вакансий вырос в сервис",
+      "url": "https://teletype.in/@rhv2006/iW3iUgTsuLd",
+      "cover": "https://img1.teletype.in/files/03/78/0378a8cd-9201-40a2-943c-a2d87d2517d2.jpeg",
+      "date": "2026-11-23"
     },
     {
       "id": "850dZpOdUEY",
       "title": "Бот, который откликается на вакансии за меня",
       "url": "https://teletype.in/@rhv2006/850dZpOdUEY",
+      "cover": "https://img2.teletype.in/files/56/68/5668fa74-168d-4b2a-919d-ee25aac590da.jpeg",
       "date": "2026-08-19"
+    },
+    {
+      "id": "ZN7TeEHCqY3",
+      "title": "Как я написал бота, который ищет мне вакансии, пока я сплю",
+      "url": "https://teletype.in/@rhv2006/ZN7TeEHCqY3",
+      "cover": "https://img4.teletype.in/files/73/24/732427b2-4f44-42ff-ae82-c59605f70eea.jpeg",
+      "date": "2026-08-19"
+    },
+    {
+      "id": "hKFw6GKi-yF",
+      "title": "«Больше никаких 1000 кликов»: Как я заставил C4D рендерить сотни конфигураций без человека",
+      "url": "https://teletype.in/@rhv2006/hKFw6GKi-yF",
+      "cover": "https://img3.teletype.in/files/e4/86/e486b62b-8b9b-46bb-acd2-0192f849ddb2.jpeg",
+      "date": "2026-08-14"
+    },
+    {
+      "id": "5_4evRjEqCe",
+      "title": "Минус 80% рутины на ресайзах: Как я заавтоматизировал верстку для T2 с помощью ExtendScript",
+      "url": "https://teletype.in/@rhv2006/5_4evRjEqCe",
+      "cover": "https://img1.teletype.in/files/89/65/8965458e-e28b-44a4-84b7-10a564b42832.jpeg",
+      "date": "2026-08-14"
     }
   ]
 }
