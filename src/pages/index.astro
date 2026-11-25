@@ -860,7 +860,7 @@ const dateRu = (iso: string) =>
 
           const measure = () => {
             const w = area.clientWidth;
-            ppy = Math.max(120, Math.round(w / 5.5)); // в окне видно ~5,5 лет
+            ppy = Math.max(140, Math.round(w / 4.5)); // в окне видно ~4,5 года
             panel.style.setProperty('--ppy', `${ppy}px`);
             playX = Math.round(w * 0.3);
             head.style.transform = `translateX(${playX}px)`;

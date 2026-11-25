@@ -1233,8 +1233,24 @@ html:has(dialog[open]) .cursor {
   width: 100%;
   padding: 0;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 560px);
+  grid-auto-columns: minmax(0, 680px);
   align-items: start;
+}
+
+/* на больших экранах карточки крупнее, чтобы не тонули в пустоте */
+@media (min-width: 1280px) and (min-height: 821px) {
+  .xp-on .xp-job {
+    padding: 28px 32px;
+  }
+
+  .xp-on .xp-job h3 {
+    font-size: clamp(26px, 2vw, 36px);
+  }
+
+  .xp-on .xp-role,
+  .xp-on .xp-points {
+    font-size: clamp(15px, 1vw, 18px);
+  }
 }
 
 .xp-on .xp-list::before,
@@ -1273,20 +1289,21 @@ html:has(dialog[open]) .cursor {
 }
 
 .xp-panel {
-  --row: 36px;
-  --rule: 28px;
+  /* дорожки растут вместе с высотой экрана */
+  --row: clamp(44px, 7vh, 80px);
+  --rule: 36px;
   --ppy: 200px;
   display: flex;
   background: var(--tl-panel);
   border: 1px solid var(--tl-line);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .xp-layers {
   flex: none;
-  width: 168px;
+  width: 200px;
   background: var(--bg);
   border-right: 1px solid var(--tl-line);
 }
@@ -1300,8 +1317,8 @@ html:has(dialog[open]) .cursor {
 .xp-layers-head {
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  font: 400 11px/1 var(--body);
+  padding: 0 16px;
+  font: 400 12px/1 var(--body);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -1310,9 +1327,9 @@ html:has(dialog[open]) .cursor {
 .xp-layer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   height: var(--row);
-  padding: 0 12px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--tl-grid);
   white-space: nowrap;
   overflow: hidden;
@@ -1325,9 +1342,9 @@ html:has(dialog[open]) .cursor {
 
 .xp-dot {
   flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
   background: var(--c);
 }
 
@@ -1355,9 +1372,9 @@ html:has(dialog[open]) .cursor {
   top: 0;
   left: calc(var(--x) * var(--ppy));
   height: calc(var(--rule) + 5 * var(--row));
-  padding: 7px 0 0 6px;
+  padding: 11px 0 0 8px;
   border-left: 1px solid var(--tl-grid);
-  font: 500 11px/1 var(--display);
+  font: 500 13px/1 var(--display);
   color: var(--muted);
 }
 
@@ -1369,17 +1386,17 @@ html:has(dialog[open]) .cursor {
 
 .xp-clip {
   position: absolute;
-  top: 5px;
-  bottom: 5px;
+  top: 7px;
+  bottom: 7px;
   left: calc(var(--x) * var(--ppy));
   width: calc(var(--w) * var(--ppy));
   display: flex;
   align-items: center;
-  padding: 0 10px 0 14px;
+  padding: 0 12px 0 18px;
   background: #1f1f23;
   border: 1px solid #303036;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -1389,27 +1406,23 @@ html:has(dialog[open]) .cursor {
 .xp-clip::before {
   content: '';
   position: absolute;
-  left: 4px;
-  top: 5px;
-  bottom: 5px;
-  width: 3px;
+  left: 6px;
+  top: 7px;
+  bottom: 7px;
+  width: 4px;
   border-radius: 2px;
   background: var(--c);
 }
 
-/* обводка активного клипа */
-.xp-clip::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border: 2px solid var(--tl-accent);
-  border-radius: 6px;
-  opacity: 0;
-  transition: opacity 0.2s;
+/* активный клип залит акцентом, как выделенный слой */
+.xp-clip.is-on {
+  background: var(--tl-accent);
+  border-color: var(--tl-accent);
+  color: var(--accent-ink);
 }
 
-.xp-clip.is-on::after {
-  opacity: 1;
+.xp-clip.is-on::before {
+  background: var(--accent-ink);
 }
 
 .xp-key {
@@ -1417,18 +1430,18 @@ html:has(dialog[open]) .cursor {
   z-index: 1;
   top: 50%;
   left: calc(var(--x) * var(--ppy));
-  width: 10px;
-  height: 10px;
-  margin: -5px 0 0 -5px;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
   background: var(--tl-panel);
-  border: 1.5px solid #8a8a86;
+  border: 2px solid #d6d5d0;
   transform: rotate(45deg);
 }
 
 .xp-key::after {
   content: '';
   position: absolute;
-  inset: -1.5px;
+  inset: -2px;
   background: var(--tl-accent);
   opacity: 0;
   transition: opacity 0.15s;
@@ -1460,10 +1473,20 @@ html:has(dialog[open]) .cursor {
 }
 
 /* невысокие экраны (1366×768 и ниже): компактнее дорожки и карточки */
+/* на активном (лаймовом) клипе ромбики тёмные: пройденные — залиты, будущие — контуром */
+.xp-clip.is-on ~ .xp-key {
+  background: var(--tl-accent);
+  border-color: var(--accent-ink);
+}
+
+.xp-clip.is-on ~ .xp-key::after {
+  background: var(--accent-ink);
+}
+
 @media (max-height: 820px) {
   .xp-panel {
-    --row: 30px;
-    --rule: 24px;
+    --row: 38px;
+    --rule: 30px;
   }
 
   .xp-on .xp-stage {
