@@ -3,6 +3,7 @@ import '@fontsource-variable/unbounded';
 import '@fontsource-variable/manrope';
 import '../styles/global.css';
 import { getCases } from '../lib/behance';
+import experience from '../data/experience.json';
 import { getArticles } from '../lib/teletype';
 import { existsSync } from 'node:fs';
 
@@ -55,51 +56,29 @@ const tools = ['Cinema 4D', 'Redshift', 'Octane', 'Blender', 'Unreal Engine 5', 
 const ai = ['Veo 3.1', 'Kling 3.0', 'Sora 2 Pro', 'Seedance', 'Flux 2 Pro', 'Nano Banana Pro', 'Midjourney', 'Recraft', 'Reve', 'ComfyUI', 'Freepik', 'Google Flow', 'Higgsfield'];
 const pad = (n: number) => String(n).padStart(2, '0');
 
-// Опыт — выжимка из резюме, самое свежее сверху.
-const experience = [
-  {
-    period: '2024 — сейчас',
-    company: 'pronew',
-    role: 'CGI / motion-дизайнер',
-    points: [
-      'Продюсирую CGI-ролики под ключ: идея → сценарий → сториборд → 3D → композитинг',
-      '20+ роликов для t2 крутятся на 17 000+ цифровых экранах по всей России',
-      'Адаптирую KV и motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16',
-      '30+ постов и motion-видео для «Фудсити», аудитория 200 000+',
-    ],
-  },
-  {
-    period: '2023 — 2024',
-    company: 'Альфа-Банк',
-    role: '3D key visual designer, проектно',
-    points: [
-      '30+ 3D key visual для промо-кампании мобильного приложения',
-      'Полный цикл CGI: скетч → моделинг → шейдинг → свет → рендер → композитинг',
-      'Нейросети в идеации ускорили этап концептов в 2 раза',
-    ],
-  },
-  {
-    period: '2023 — 2024',
-    company: 'СБИС',
-    role: 'UI/UX и 3D-дизайнер',
-    points: [
-      '30+ CG-сцен в Cinema 4D + Redshift: CTR баннеров 3,2% против 1,8% у статики',
-      'Дизайн-система маркетплейса из 120+ компонентов в Figma',
-    ],
-  },
-  {
-    period: '2020 — 2022',
-    company: 'РН-УфаНИПИнефть (Роснефть)',
-    role: 'Графический дизайнер',
-    points: ['Визуальные пакеты для корпоративных событий, 120+ пиктограмм, инфографика и препресс'],
-  },
-  {
-    period: '2011 — 2020',
-    company: 'Агентства и фриланс',
-    role: 'SMM-, веб- и графический дизайнер',
-    points: ['rechi media (Samocat Sharing, SmartyKids, DeliLabs), ojo (Finex), наружная реклама и печать'],
-  },
-];
+// Опыт: данные в src/data/experience.json, самое свежее сверху.
+// Таймлайн на десктопе рисуется из тех же данных: годы → позиции клипов и кейфреймов на дорожках.
+const TL_FROM = 2011;
+const TL_TO = 2027;
+// метки слоёв — оттенки лаймового акцента сайта
+const LAYER_COLORS = ['#d4ff3a', '#b2dc2c', '#8fb822', '#6e9419', '#f2f0eb'];
+const ym = (s: string, end = false) => {
+  const [y, m] = s.split('-').map(Number);
+  return y + (end ? m : m - 1) / 12;
+};
+const timeline = experience.map((job, i) => {
+  const from = ym(job.from);
+  const to = ym(job.to, true);
+  const n = job.points.length;
+  return {
+    ...job,
+    start: +from.toFixed(4),
+    end: +to.toFixed(4),
+    color: LAYER_COLORS[i % LAYER_COLORS.length],
+    keys: job.points.map((_, k) => +(from + ((to - from) * (k + 1)) / (n + 1)).toFixed(4)),
+  };
+});
+const tlYears = Array.from({ length: TL_TO - TL_FROM + 1 }, (_, i) => TL_FROM + i);
 
 const dateRu = (iso: string) =>
   new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -359,30 +338,86 @@ const dateRu = (iso: string) =>
         </div>
       </section>
 
-      <section id="experience" class="section wrap experience">
-        <div class="section-head">
+      <section id="experience" class="section experience" data-xp>
+        <div class="wrap section-head">
           <h2>Опыт</h2>
           <a class="link link-accent" href={site.resumePdf} target="_blank" rel="noopener">Полное резюме, PDF ↗</a>
         </div>
-        <ol class="timeline">
-          {
-            experience.map((job) => (
-              <li class="job">
-                <p class="job-period">{job.period}</p>
-                <div>
-                  <h3>{job.company}</h3>
-                  <p class="job-role">{job.role}</p>
-                  <ul class="job-points">
-                    {job.points.map((p) => (
-                      <li>{p}</li>
-                    ))}
-                  </ul>
+        <div class="xp-scroll">
+          <div class="xp-stage">
+            <div class="wrap xp-bar" aria-hidden="true">
+              <span class="xp-comp">COMP · experience_{TL_FROM}–{TL_TO - 1}</span>
+              <span class="xp-tc" data-xp-tc>{TL_FROM}.01</span>
+              <span class="xp-pct"><span data-xp-pct>0%</span> · листайте ↓</span>
+            </div>
+            <div class="wrap xp-cards">
+              <ol class="xp-list">
+                {
+                  timeline.map((job) => (
+                    <li class="xp-job" data-start={job.start} data-end={job.end}>
+                      <p class="xp-period">{job.period}</p>
+                      <h3>{job.company}</h3>
+                      <p class="xp-role">{job.role}</p>
+                      <ul class="xp-points">
+                        {job.points.map((p) => (
+                          <li>{p}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))
+                }
+              </ol>
+            </div>
+            <div class="wrap xp-panel-wrap" aria-hidden="true">
+              <div class="xp-panel">
+                <div class="xp-layers">
+                  <div class="xp-layers-head">Слои</div>
+                  {
+                    timeline.map((job) => (
+                      <div class="xp-layer" style={`--c:${job.color}`}>
+                        <span class="xp-dot" />
+                        {job.layer}
+                      </div>
+                    ))
+                  }
                 </div>
-              </li>
-            ))
-          }
-        </ol>
-        <p class="edu">Образование: МГГУ им. Шолохова, графический дизайн, 2013</p>
+                <div class="xp-area">
+                  <div class="xp-tracks">
+                    <div class="xp-ruler">
+                      {tlYears.map((y) => (
+                        <span class="xp-tick" style={`--x:${y - TL_FROM}`}>{y}</span>
+                      ))}
+                    </div>
+                    {
+                      timeline.map((job) => (
+                        <div class="xp-lane">
+                          <div class="xp-clip" style={`--x:${job.start - TL_FROM};--w:${job.end - job.start};--c:${job.color}`}>
+                            <span>{job.company}</span>
+                          </div>
+                          {job.keys.map((k) => (
+                            <i class="xp-key" data-y={k} style={`--x:${k - TL_FROM}`} />
+                          ))}
+                        </div>
+                      ))
+                    }
+                  </div>
+                  <div class="xp-head" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="wrap">
+          <p class="edu">Образование: МГГУ им. Шолохова, графический дизайн, 2013</p>
+        </div>
+      </section>
+
+      <section class="wrap xp-cta">
+        <div>
+          <h3>Всё то же самое — одним файлом</h3>
+          <p>Резюме в PDF для тех, кому некогда листать.</p>
+        </div>
+        <a class="btn btn-primary" href={site.resumePdf} target="_blank" rel="noopener">Скачать резюме PDF</a>
       </section>
 
       {
@@ -778,7 +813,7 @@ const dateRu = (iso: string) =>
 
       // Плавное появление блоков при прокрутке.
       if (!reduce) {
-        const items = document.querySelectorAll<HTMLElement>('.card, .section h2, .about-lead, .facts > div, .job, .contact-title');
+        const items = document.querySelectorAll<HTMLElement>('.card, .section h2, .about-lead, .facts > div, .xp-cta, .contact-title');
         const reveal = new IntersectionObserver(
           (entries) =>
             entries.forEach((e) => {
@@ -793,6 +828,121 @@ const dateRu = (iso: string) =>
           el.classList.add('reveal');
           reveal.observe(el);
         });
+      }
+
+      // «Опыт»: таймлайн в духе After Effects. Секция закреплена (sticky), колесо не перехватывается:
+      // прогресс прокрутки обёртки 0–1 → «текущий год» 2011–2026, дорожки едут под неподвижным плейхедом.
+      // Только на экранах от 760px и без reduced motion; иначе остаётся обычный вертикальный список.
+      {
+        const sec = document.querySelector<HTMLElement>('[data-xp]');
+        if (sec) {
+          const mq = matchMedia('(min-width: 760px) and (prefers-reduced-motion: no-preference)');
+          const scroller = sec.querySelector<HTMLElement>('.xp-scroll')!;
+          const panel = sec.querySelector<HTMLElement>('.xp-panel')!;
+          const area = sec.querySelector<HTMLElement>('.xp-area')!;
+          const tracks = sec.querySelector<HTMLElement>('.xp-tracks')!;
+          const head = sec.querySelector<HTMLElement>('.xp-head')!;
+          const list = sec.querySelector<HTMLElement>('.xp-list')!;
+          const tcEl = sec.querySelector<HTMLElement>('[data-xp-tc]')!;
+          const pctEl = sec.querySelector<HTMLElement>('[data-xp-pct]')!;
+          const jobs = [...sec.querySelectorAll<HTMLElement>('.xp-job')];
+          const clips = [...sec.querySelectorAll<HTMLElement>('.xp-clip')];
+          const layers = [...sec.querySelectorAll<HTMLElement>('.xp-layer')];
+          const spans = jobs.map((j) => [Number(j.dataset.start), Number(j.dataset.end)]);
+          const keys = [...sec.querySelectorAll<HTMLElement>('.xp-key')]
+            .map((el) => ({ el, y: Number(el.dataset.y) }))
+            .sort((a, b) => a.y - b.y);
+
+          const Y0 = 2011;
+          const YEND = 2027 - 1e-4; // к концу секции таймкод показывает 2026.12
+          let ppy = 200, playX = 0, total = 1, raf = 0, on = false;
+          let lastTc = '', lastPct = -1, doneCount = 0, activeKey = '';
+
+          const measure = () => {
+            const w = area.clientWidth;
+            ppy = Math.max(120, Math.round(w / 5.5)); // в окне видно ~5,5 лет
+            panel.style.setProperty('--ppy', `${ppy}px`);
+            playX = Math.round(w * 0.3);
+            head.style.transform = `translateX(${playX}px)`;
+            total = Math.max(1, scroller.offsetHeight - innerHeight);
+          };
+
+          const setActive = (year: number) => {
+            let idx = spans.flatMap(([a, b], i) => (year >= a && year < b ? [i] : []));
+            // после конца последнего места (pronew до 08.2026) держим самое свежее
+            if (!idx.length) {
+              let best = 0;
+              spans.forEach(([, b], i) => b <= year && b > spans[best][1] && (best = i));
+              idx = [best];
+            }
+            const k = idx.join();
+            if (k === activeKey) return;
+            activeKey = k;
+            jobs.forEach((el, i) => el.classList.toggle('is-active', idx.includes(i)));
+            clips.forEach((el, i) => el.classList.toggle('is-on', idx.includes(i)));
+            layers.forEach((el, i) => el.classList.toggle('is-on', idx.includes(i)));
+            list.dataset.n = String(idx.length);
+          };
+
+          const frame = () => {
+            raf = 0;
+            const r = scroller.getBoundingClientRect();
+            const p = Math.min(1, Math.max(0, -r.top / total));
+            const year = Y0 + p * (YEND - Y0);
+            tracks.style.transform = `translate3d(${(playX - (year - Y0) * ppy).toFixed(1)}px,0,0)`;
+
+            const y = Math.floor(year);
+            const m = Math.min(12, Math.floor((year - y) * 12) + 1);
+            const tc = `${y}.${String(m).padStart(2, '0')}`;
+            if (tc !== lastTc) tcEl.textContent = lastTc = tc;
+            const pct = Math.round(p * 100);
+            if (pct !== lastPct) pctEl.textContent = `${(lastPct = pct)}%`;
+
+            // ромбики по порядку: закрашиваем пройденные, сбрасываем при прокрутке назад
+            let n = 0;
+            while (n < keys.length && keys[n].y <= year) n++;
+            if (n !== doneCount) {
+              keys.forEach((k, i) => (i < Math.max(n, doneCount)) && k.el.classList.toggle('is-done', i < n));
+              doneCount = n;
+            }
+            setActive(year);
+          };
+
+          const request = () => (raf ||= requestAnimationFrame(frame));
+          const onResize = () => {
+            measure();
+            request();
+          };
+
+          const enable = () => {
+            if (on) return;
+            on = true;
+            sec.classList.add('xp-on');
+            activeKey = '';
+            doneCount = 0;
+            measure();
+            frame();
+            addEventListener('scroll', request, { passive: true });
+            addEventListener('resize', onResize, { passive: true });
+          };
+
+          const disable = () => {
+            if (!on) return;
+            on = false;
+            sec.classList.remove('xp-on');
+            removeEventListener('scroll', request);
+            removeEventListener('resize', onResize);
+            cancelAnimationFrame(raf);
+            raf = 0;
+            [...jobs, ...clips, ...layers].forEach((el) => el.classList.remove('is-active', 'is-on'));
+            keys.forEach((k) => k.el.classList.remove('is-done'));
+            tracks.style.transform = '';
+          };
+
+          const sync = () => (mq.matches ? enable() : disable());
+          mq.addEventListener('change', sync);
+          sync();
+        }
       }
 
       const dialog = document.querySelector<HTMLDialogElement>('dialog.reel')!;
@@ -838,7 +988,7 @@ const dateRu = (iso: string) =>
         matchMedia('(hover: hover) and (pointer: fine)').matches &&
         !matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (glowOk) {
-        const SEL = 'main h1, main h2, main h3, main p, main dd, .job-points li, footer p';
+        const SEL = 'main h1, main h2, main h3, main p, main dd, footer p';
         const clear = 'rgba(0, 0, 0, 0)';
         const setPos = (el: HTMLElement, e: PointerEvent) => {
           const r = el.getBoundingClientRect();

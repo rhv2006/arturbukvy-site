@@ -1082,65 +1082,429 @@ html:has(dialog[open]) .cursor {
   color: var(--muted);
 }
 
-/* ---------- experience ---------- */
+/* ---------- experience: таймлайн в духе After Effects ----------
+   По умолчанию (без JS, экраны уже 760px, reduced motion) — вертикальный список.
+   Скрипт добавляет секции .xp-on: обёртка вытягивается на 540vh, внутри sticky-сцена,
+   дорожки едут под неподвижным плейхедом. Анимируются только transform и opacity. */
 
-.timeline {
-  border-top: 1px solid var(--line);
+.experience,
+.xp-cta {
+  /* цвета сайта: акцент — лайм, панели и линии — из общих токенов */
+  --tl-accent: var(--accent);
+  --tl-panel: var(--surface);
+  --tl-line: var(--line);
+  --tl-grid: #1d1d21;
 }
 
-.job {
-  display: grid;
-  gap: 8px 32px;
-  padding-block: 32px;
-  border-bottom: 1px solid var(--line);
-  transition: background 0.3s;
+.xp-bar,
+.xp-panel-wrap {
+  display: none;
 }
 
-@media (min-width: 800px) {
-  .job {
-    grid-template-columns: 220px 1fr;
-  }
-}
-
-.job-period {
-  margin: 4px 0 0;
-  font: 500 14px/1.4 var(--display);
-  color: var(--muted);
-}
-
-.job h3 {
-  font-size: clamp(22px, 2.4vw, 30px);
-}
-
-.job-role {
-  margin: 8px 0 16px;
-  color: var(--muted);
-}
-
-.job-points {
-  display: grid;
-  gap: 8px;
-  max-width: 760px;
-}
-
-.job-points li {
+.xp-list {
   position: relative;
-  padding-left: 22px;
+  display: grid;
+  gap: 20px;
+  padding-left: 32px;
 }
 
-.job-points li::before {
+/* вертикальная линия слева */
+.xp-list::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--tl-line);
+}
+
+.xp-job {
+  position: relative;
+  max-width: 860px;
+  padding: 24px;
+  background: var(--tl-panel);
+  border: 1px solid var(--tl-line);
+  border-radius: 14px;
+}
+
+/* кейфрейм-ромбик на линии */
+.xp-job::before {
+  content: '';
+  position: absolute;
+  left: -30px;
+  top: 28px;
+  width: 12px;
+  height: 12px;
+  background: var(--tl-accent);
+  transform: rotate(45deg);
+}
+
+.xp-period {
+  margin: 0;
+  font: 500 14px/1.4 var(--display);
+  color: var(--tl-accent);
+}
+
+.xp-job h3 {
+  margin: 8px 0 0;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.2;
+}
+
+.xp-role {
+  margin: 6px 0 14px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.xp-points {
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.xp-points li {
+  position: relative;
+  padding-left: 20px;
+}
+
+.xp-points li::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.65em;
+  top: 0.7em;
   width: 10px;
   height: 2px;
-  background: var(--accent);
+  background: var(--tl-accent);
 }
 
 .edu {
   margin: 24px 0 0;
   font-size: 15px;
+  color: var(--muted);
+}
+
+/* ---- закреплённая сцена ---- */
+
+.xp-on .xp-scroll {
+  height: 540vh;
+}
+
+.xp-on .xp-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 112px 0 24px; /* сверху место под плавающее меню */
+  overflow: hidden;
+}
+
+.xp-on .xp-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  font: 400 13px/1.3 var(--body);
+  color: var(--muted);
+}
+
+.xp-pct {
+  text-align: right;
+}
+
+.xp-tc {
+  font: 600 clamp(30px, 3.4vw, 46px)/1 var(--display);
+  font-variant-numeric: tabular-nums;
+  color: var(--tl-accent);
+}
+
+.xp-on .xp-cards {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+}
+
+.xp-on .xp-list {
+  width: 100%;
+  padding: 0;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 560px);
+  align-items: start;
+}
+
+.xp-on .xp-list::before,
+.xp-on .xp-job::before {
+  display: none;
+}
+
+.xp-on .xp-job {
+  display: none;
+}
+
+.xp-on .xp-job.is-active {
+  display: block;
+  animation: xp-in 0.2s ease-out both;
+}
+
+@keyframes xp-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* три места сразу (конец 2024): карточки плотнее, чтобы влезали по высоте */
+.xp-on .xp-list[data-n='3'] .xp-job {
+  padding: 18px;
+}
+
+.xp-on .xp-list[data-n='3'] .xp-points {
+  gap: 4px;
+  font-size: 14px;
+}
+
+.xp-on .xp-panel-wrap {
+  display: block;
+}
+
+.xp-panel {
+  --row: 36px;
+  --rule: 28px;
+  --ppy: 200px;
+  display: flex;
+  background: var(--tl-panel);
+  border: 1px solid var(--tl-line);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.xp-layers {
+  flex: none;
+  width: 168px;
+  background: var(--bg);
+  border-right: 1px solid var(--tl-line);
+}
+
+.xp-layers-head,
+.xp-ruler {
+  height: var(--rule);
+  border-bottom: 1px solid var(--tl-line);
+}
+
+.xp-layers-head {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font: 400 11px/1 var(--body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.xp-layer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--row);
+  padding: 0 12px;
+  border-bottom: 1px solid var(--tl-grid);
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--muted);
+}
+
+.xp-layer.is-on {
+  color: var(--text);
+}
+
+.xp-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+.xp-area {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: calc(var(--rule) + 5 * var(--row));
+  overflow: hidden;
+}
+
+.xp-tracks {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(17 * var(--ppy));
+  will-change: transform;
+}
+
+.xp-ruler {
+  position: relative;
+}
+
+.xp-tick {
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) * var(--ppy));
+  height: calc(var(--rule) + 5 * var(--row));
+  padding: 7px 0 0 6px;
+  border-left: 1px solid var(--tl-grid);
+  font: 500 11px/1 var(--display);
+  color: var(--muted);
+}
+
+.xp-lane {
+  position: relative;
+  height: var(--row);
+  border-bottom: 1px solid var(--tl-grid);
+}
+
+.xp-clip {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: calc(var(--x) * var(--ppy));
+  width: calc(var(--w) * var(--ppy));
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 14px;
+  background: #1f1f23;
+  border: 1px solid #303036;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* цвет слоя — полоска у начала клипа, как метка слоя в AE */
+.xp-clip::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 5px;
+  bottom: 5px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+/* обводка активного клипа */
+.xp-clip::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid var(--tl-accent);
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.xp-clip.is-on::after {
+  opacity: 1;
+}
+
+.xp-key {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: calc(var(--x) * var(--ppy));
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--tl-panel);
+  border: 1.5px solid #8a8a86;
+  transform: rotate(45deg);
+}
+
+.xp-key::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  background: var(--tl-accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.xp-key.is-done::after {
+  opacity: 1;
+}
+
+.xp-head {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 2px;
+  background: var(--tl-accent);
+}
+
+.xp-head::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 0 0 4px 4px;
+  background: var(--tl-accent);
+}
+
+/* невысокие экраны (1366×768 и ниже): компактнее дорожки и карточки */
+@media (max-height: 820px) {
+  .xp-panel {
+    --row: 30px;
+    --rule: 24px;
+  }
+
+  .xp-on .xp-stage {
+    gap: 12px;
+    padding-top: 100px;
+  }
+
+  .xp-on .xp-job {
+    padding: 18px 20px;
+  }
+
+  .xp-on .xp-role {
+    margin-bottom: 10px;
+  }
+
+  .xp-on .xp-points {
+    gap: 4px;
+    font-size: 14px;
+  }
+}
+
+/* ---- после секции: резюме одним файлом ---- */
+
+.xp-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 96px;
+  padding-block: 40px;
+  border-block: 1px solid var(--line);
+}
+
+.xp-cta h3 {
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 32px);
+}
+
+.xp-cta p {
+  margin: 8px 0 0;
   color: var(--muted);
 }
 
