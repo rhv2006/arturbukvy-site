@@ -4,6 +4,7 @@ import '@fontsource-variable/manrope';
 import '../styles/global.css';
 import { getCases } from '../lib/behance';
 import experience from '../data/experience.json';
+import { xpFrames } from '../data/xp-frames';
 import { getArticles } from '../lib/teletype';
 import { existsSync } from 'node:fs';
 
@@ -79,6 +80,14 @@ const timeline = experience.map((job, i) => {
   };
 });
 const tlYears = Array.from({ length: TL_TO - TL_FROM + 1 }, (_, i) => TL_FROM + i);
+// Кадры окна Render View (src/data/xp-frames.ts): по возрастанию года, нумерация «кадр n / N» — внутри работы
+const frames = [...xpFrames]
+  .sort((a, b) => a.year - b.year)
+  .map((f, _, all) => {
+    const same = all.filter((g) => g.job === f.job);
+    return { ...f, n: same.indexOf(f) + 1, total: same.length };
+  });
+const framesOf = (layer: string) => frames.filter((f) => f.job === layer);
 
 const dateRu = (iso: string) =>
   new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -376,15 +385,52 @@ const dateRu = (iso: string) =>
                           <li>{p}</li>
                         ))}
                       </ul>
+                      {framesOf(job.layer).length > 0 && (
+                        <div class="xp-shots">
+                          {framesOf(job.layer).map((f) => (
+                            <img src={f.src} alt={f.alt} width="1600" height="1200" loading="lazy" decoding="async" />
+                          ))}
+                        </div>
+                      )}
                     </li>
                   ))
                 }
               </ol>
+              <div class="xp-render" data-xp-render>
+                <div class="xp-rv-head">
+                  <span class="xp-rv-title"><i class="xp-rv-dot" />Render View<span data-rv-file /></span>
+                  <span data-rv-meta />
+                </div>
+                <div class="xp-rv-view">
+                  {
+                    frames.map((f) => (
+                      <img
+                        class="xp-rv-img"
+                        data-src={f.src}
+                        data-y={f.year}
+                        data-file={f.file}
+                        data-meta={`${f.job} · ${Math.floor(f.year)} · кадр ${f.n} / ${f.total}`}
+                        alt={f.alt}
+                        width="1600"
+                        height="1200"
+                        decoding="async"
+                      />
+                    ))
+                  }
+                  <canvas class="xp-rv-canvas" aria-hidden="true" />
+                  <span class="xp-rv-badge">рендер <span data-rv-pct>0</span>%</span>
+                  <div class="xp-rv-progress"><i class="xp-rv-fill" /></div>
+                </div>
+              </div>
             </div>
             <div class="wrap xp-panel-wrap" aria-hidden="true">
               <div class="xp-panel">
                 <div class="xp-layers">
                   <div class="xp-layers-head">Слои</div>
+                  <div class="xp-layer xp-layer-cases" style="--c:var(--accent)">
+                    <span class="xp-dot" />
+                    Кейсы
+                  </div>
                   {
                     timeline.map((job) => (
                       <div class="xp-layer" style={`--c:${job.color}`}>
@@ -399,6 +445,11 @@ const dateRu = (iso: string) =>
                     <div class="xp-ruler">
                       {tlYears.map((y) => (
                         <span class="xp-tick" style={`--x:${y - TL_FROM}`}>{y}</span>
+                      ))}
+                    </div>
+                    <div class="xp-lane xp-lane-cases">
+                      {frames.map((f) => (
+                        <i class="xp-case" data-y={f.year} style={`--x:${f.year - TL_FROM}`} />
                       ))}
                     </div>
                     {
@@ -862,7 +913,9 @@ const dateRu = (iso: string) =>
           const HINT = hintEl.textContent;
           const jobs = [...sec.querySelectorAll<HTMLElement>('.xp-job')];
           const clips = [...sec.querySelectorAll<HTMLElement>('.xp-clip')];
-          const layers = [...sec.querySelectorAll<HTMLElement>('.xp-layer')];
+          const layers = [...sec.querySelectorAll<HTMLElement>('.xp-layer:not(.xp-layer-cases)')];
+          // от 1100px рядом с карточкой — окно Render View
+          const wideMq = matchMedia('(min-width: 1100px)');
           const spans = jobs.map((j) => [Number(j.dataset.start), Number(j.dataset.end)]);
           const keys = [...sec.querySelectorAll<HTMLElement>('.xp-key')]
             .map((el) => ({ el, y: Number(el.dataset.y) }))
@@ -870,6 +923,28 @@ const dateRu = (iso: string) =>
 
           const Y0 = 2011;
           const YEND = 2027 - 1e-4; // к концу секции таймкод показывает 2026.12
+          // Время идёт равномерно по кадрам, а не по годам: от кадра до кадра Render View
+          // (и от последнего кадра до конца) — одинаковый отрезок прокрутки и автоплея.
+          // Между двумя кадрами годы идут линейно, поэтому в «пустые» годы плейхед едет быстрее.
+          const SHOT_VH = 33; // прокрутка на один кадр
+          const SHOT_MS = 1130; // время на кадр в автоплее: ~0,55 с рендер + ~0,55 с готовая картинка
+          const knots = [
+            ...new Set([
+              Y0,
+              ...[...sec.querySelectorAll<HTMLElement>('.xp-rv-img')]
+                .map((im) => Number(im.dataset.y))
+                .filter((y) => y > Y0 && y < YEND),
+              YEND,
+            ]),
+          ].sort((a, b) => a - b);
+          const SHOTS = knots.length - 1;
+          // прогресс 0–1 → год таймлайна
+          const toYear = (p: number) => {
+            const u = p * SHOTS;
+            const i = Math.min(SHOTS - 1, Math.floor(u));
+            return knots[i] + (u - i) * (knots[i + 1] - knots[i]);
+          };
+          const cardsEl = sec.querySelector<HTMLElement>('.xp-cards')!;
           let ppy = 200, playX = 0, total = 1, raf = 0, on = false;
           let lastTc = '', lastPct = -1, doneCount = 0, activeKey = '';
 
@@ -879,7 +954,13 @@ const dateRu = (iso: string) =>
             panel.style.setProperty('--ppy', `${ppy}px`);
             playX = Math.round(w * 0.3);
             head.style.transform = `translateX(${playX}px)`;
+            scroller.style.height = `calc(100vh + ${SHOTS * SHOT_VH}vh)`;
             total = Math.max(1, scroller.offsetHeight - innerHeight);
+            // окно Render View — 4:3 по всей доступной высоте (40px — шапка окна, 2px — рамка),
+            // но не шире половины ряда, чтобы главной оставалась карточка
+            const rvH = cardsEl.clientHeight - 42;
+            const rvW = Math.min(Math.round((rvH * 4) / 3) + 2, Math.round((cardsEl.clientWidth - 32) / 2));
+            cardsEl.style.setProperty('--rv-w', `${Math.max(240, rvW)}px`);
           };
 
           const setActive = (year: number) => {
@@ -893,17 +974,178 @@ const dateRu = (iso: string) =>
             const k = idx.join();
             if (k === activeKey) return;
             activeKey = k;
-            jobs.forEach((el, i) => el.classList.toggle('is-active', idx.includes(i)));
+            // самая свежая из идущих работ (позже всех началась; при равенстве — та, что выше в списке)
+            const lead = idx.reduce((a, b) => (spans[b][0] > spans[a][0] ? b : a));
+            jobs.forEach((el, i) => {
+              el.classList.toggle('is-active', idx.includes(i));
+              el.classList.toggle('is-lead', i === lead);
+            });
             clips.forEach((el, i) => el.classList.toggle('is-on', idx.includes(i)));
             layers.forEach((el, i) => el.classList.toggle('is-on', idx.includes(i)));
-            list.dataset.n = String(idx.length);
+            list.dataset.n = String(wideMq.matches ? 1 : idx.length);
+          };
+
+          // Окно Render View: активный кадр — последний, чей год <= текущего года таймлайна.
+          // Смена кадра — как прогрессивный 3D-рендер: кадр проступает из цветного шума,
+          // крупные пиксели дробятся до полного разрешения, шум «досэмплируется» и уходит.
+          // Полоса и плашка «рендер NN%» идут синхронно. Рисуется на canvas поверх картинок;
+          // вызывается из frame(), своего scroll-слушателя нет.
+          const rv = sec.querySelector<HTMLElement>('[data-xp-render]')!;
+          const rvView = rv.querySelector<HTMLElement>('.xp-rv-view')!;
+          const rvImgs = [...rv.querySelectorAll<HTMLImageElement>('.xp-rv-img')]; // уже по возрастанию года
+          const rvYears = rvImgs.map((im) => Number(im.dataset.y));
+          const rvFile = rv.querySelector<HTMLElement>('[data-rv-file]')!;
+          const rvMeta = rv.querySelector<HTMLElement>('[data-rv-meta]')!;
+          const rvPct = rv.querySelector<HTMLElement>('[data-rv-pct]')!;
+          const rvFill = rv.querySelector<HTMLElement>('.xp-rv-fill')!;
+          const rvCanvas = rv.querySelector<HTMLCanvasElement>('.xp-rv-canvas')!;
+          const rvCtx = rvCanvas.getContext('2d')!;
+          const rvSmall = document.createElement('canvas'); // кадр в низком разрешении
+          const rvSmallCtx = rvSmall.getContext('2d')!;
+          const cases = [...sec.querySelectorAll<HTMLElement>('.xp-case')]; // в том же порядке, что кадры
+          const REVEAL_MS = 550;
+          const BLOCK = 40; // размер «пикселя» в начале рендера, px
+          let rvCur = -2, rvAnim = 0;
+          let rvTop: HTMLImageElement | null = null;
+          let rvNoise: CanvasPattern | null = null;
+
+          // тайл шума недосэмплированного рендера: тёмное цветное зерно и редкие яркие «светлячки»
+          const makeNoise = () => {
+            const c = document.createElement('canvas');
+            c.width = c.height = 256;
+            const x = c.getContext('2d')!;
+            const d = x.createImageData(256, 256);
+            for (let i = 0; i < d.data.length; i += 4) {
+              const v = Math.random() < 0.06 ? 170 + Math.random() * 85 : Math.random() * 70;
+              d.data[i] = v * (0.6 + Math.random() * 0.8);
+              d.data[i + 1] = v * (0.6 + Math.random() * 0.8);
+              d.data[i + 2] = v * (0.6 + Math.random() * 0.8);
+              d.data[i + 3] = 255;
+            }
+            x.putImageData(d, 0, 0);
+            return rvCtx.createPattern(c, 'repeat');
+          };
+
+          // картинки окна грузятся по требованию: текущая и соседние
+          const rvLoad = (i: number) => {
+            const im = rvImgs[i];
+            if (im && !im.getAttribute('src')) im.src = im.dataset.src!;
+          };
+          const ready = (im: HTMLImageElement) => im.complete && im.naturalWidth > 0;
+          const rvSet = (k: number) => {
+            rvFill.style.transform = `scaleX(${k})`;
+            rvPct.textContent = String(Math.round(k * 100));
+          };
+          // видна только верхняя картинка, холст выключен
+          const rvSettle = () => {
+            rvImgs.forEach((im) => im.classList.toggle('is-shown', im === rvTop));
+            rvCanvas.classList.remove('is-on');
+          };
+          // один кадр рендера: k = 0 — чистый шум, k = 1 — готовая картинка
+          const rvDraw = (im: HTMLImageElement, k: number) => {
+            const W = rvCanvas.width, H = rvCanvas.height;
+            if (ready(im)) {
+              const s = Math.max(1, Math.round(BLOCK * (1 - k) ** 2));
+              const w = Math.ceil(W / s), h = Math.ceil(H / s);
+              rvSmall.width = w;
+              rvSmall.height = h;
+              // как object-fit: cover
+              const iw = im.naturalWidth, ih = im.naturalHeight;
+              const sc = Math.max(W / iw, H / ih);
+              const sw = W / sc, sh = H / sc;
+              rvSmallCtx.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, w, h);
+              rvCtx.imageSmoothingEnabled = false;
+              rvCtx.globalAlpha = 1;
+              rvCtx.drawImage(rvSmall, 0, 0, w, h, 0, 0, w * s, h * s);
+            }
+            const na = ready(im) ? 0.92 * (1 - k) ** 1.4 : 1;
+            if (na > 0.01 && rvNoise) {
+              const ox = (Math.random() * 256) | 0, oy = (Math.random() * 256) | 0;
+              rvCtx.globalAlpha = na;
+              rvCtx.fillStyle = rvNoise;
+              rvCtx.translate(-ox, -oy);
+              rvCtx.fillRect(ox, oy, W, H);
+              rvCtx.setTransform(1, 0, 0, 1, 0, 0);
+              rvCtx.globalAlpha = 1;
+            }
+          };
+          const rvShow = (i: number, animate: boolean) => {
+            cancelAnimationFrame(rvAnim);
+            rvAnim = 0;
+            rv.classList.toggle('has-frame', i >= 0);
+            if (i < 0) {
+              // до первого кадра — пустое окно: «Render View» и тёмный фон
+              rvTop = null;
+              rvFile.textContent = rvMeta.textContent = '';
+              rvSet(0);
+              rvSettle();
+              return;
+            }
+            const im = rvImgs[i];
+            rvLoad(i);
+            rvLoad(i + 1);
+            rvLoad(i - 1);
+            rvFile.textContent = im.dataset.file!;
+            rvMeta.textContent = im.dataset.meta!;
+            rvTop = im;
+            if (!animate) {
+              rvSet(1);
+              rvSettle();
+              return;
+            }
+            // новый рендер начинается с шума поверх того, что было видно, — в том числе с недорендеренного кадра
+            rvCanvas.width = Math.max(1, rvView.clientWidth);
+            rvCanvas.height = Math.max(1, rvView.clientHeight);
+            rvNoise ||= makeNoise();
+            rvDraw(im, 0);
+            rvCanvas.classList.add('is-on');
+            rvSet(0);
+            let t0 = 0;
+            const step = (now: number) => {
+              // пока картинка грузится, «рендер» шумит на 0%
+              if (!ready(im)) {
+                rvDraw(im, 0);
+                rvAnim = requestAnimationFrame(step);
+                return;
+              }
+              t0 ||= now;
+              const t = Math.min(1, (now - t0) / REVEAL_MS);
+              const k = 1 - (1 - t) ** 2; // ease-out
+              rvDraw(im, k);
+              rvSet(k);
+              if (t < 1) rvAnim = requestAnimationFrame(step);
+              else {
+                rvAnim = 0;
+                rvSettle();
+              }
+            };
+            rvAnim = requestAnimationFrame(step);
+          };
+          const renderAt = (year: number) => {
+            let i = -1;
+            while (i + 1 < rvYears.length && rvYears[i + 1] <= year) i++;
+            if (i === rvCur) return;
+            const first = rvCur === -2;
+            rvCur = i;
+            cases.forEach((c, j) => c.classList.toggle('is-done', j <= i));
+            // окно видно только от 1100px; уже — только маркеры на дорожке
+            if (wideMq.matches) rvShow(i, !first);
+          };
+          const rvReset = () => {
+            cancelAnimationFrame(rvAnim);
+            rvAnim = 0;
+            rvCur = -2;
+            rvTop = null;
+            rvSettle();
+            rv.classList.remove('has-frame');
+            cases.forEach((c) => c.classList.remove('is-done'));
           };
 
           const frame = () => {
             raf = 0;
             const r = scroller.getBoundingClientRect();
             const p = Math.min(1, Math.max(0, -r.top / total));
-            const year = Y0 + p * (YEND - Y0);
+            const year = toYear(p);
             tracks.style.transform = `translate3d(${(playX - (year - Y0) * ppy).toFixed(1)}px,0,0)`;
 
             const y = Math.floor(year);
@@ -921,17 +1163,18 @@ const dateRu = (iso: string) =>
               doneCount = n;
             }
             setActive(year);
+            renderAt(year);
             autoCheck(r, p);
           };
 
           const request = () => (raf ||= requestAnimationFrame(frame));
 
           // Автопроигрывание, как в After Effects: когда сцена закрепляется при прокрутке вниз,
-          // страница сама докручивает таймлайн до конца (весь путь 2011→2026 — ~6 с).
+          // страница сама докручивает таймлайн до конца (SHOT_MS на каждый кадр Render View).
           // Пробел — пауза/дальше; колесо, клавиши, тач или клик — стоп, дальше листаете сами.
           // Подсказка — на курсоре (над сценой) и в строке сверху. Снова само запустится,
           // только если уйти из секции и вернуться.
-          const FULL_MS = 6000;
+          const FULL_MS = SHOT_MS * SHOTS;
           const stage = sec.querySelector<HTMLElement>('.xp-stage')!;
           const cursorLabel = document.querySelector<HTMLElement>('.cursor-label');
           let play = 0, playT0 = 0, autoDone = false, lastY = scrollY;
@@ -958,7 +1201,10 @@ const dateRu = (iso: string) =>
             setHint(true);
             const step = (now: number) => {
               const k = Math.min(1, (now - playT0) / dur);
-              const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2; // мягкий старт и финиш
+              // ровная скорость с коротким разгоном и торможением по краям (3% пути),
+              // чтобы в середине таймлайна кадры не пролетали вдвое быстрее
+              const A = 0.03, D = 2 * A * (1 - A);
+              const e = k < A ? (k * k) / D : k > 1 - A ? 1 - ((1 - k) * (1 - k)) / D : (k - A / 2) / (1 - A);
               scrollTo({ top: from + (to - from) * e, behavior: 'instant' });
               if (k < 1) play = requestAnimationFrame(step);
               else stop();
@@ -1006,6 +1252,7 @@ const dateRu = (iso: string) =>
             setHint(false);
             activeKey = '';
             doneCount = 0;
+            rvReset();
             measure();
             frame();
             addEventListener('scroll', request, { passive: true });
@@ -1030,13 +1277,22 @@ const dateRu = (iso: string) =>
             stop();
             cancelAnimationFrame(raf);
             raf = 0;
-            [...jobs, ...clips, ...layers].forEach((el) => el.classList.remove('is-active', 'is-on'));
+            [...jobs, ...clips, ...layers].forEach((el) => el.classList.remove('is-active', 'is-on', 'is-lead'));
             keys.forEach((k) => k.el.classList.remove('is-done'));
+            rvReset();
             tracks.style.transform = '';
+            scroller.style.height = '';
           };
 
           const sync = () => (mq.matches ? enable() : disable());
           mq.addEventListener('change', sync);
+          // окно появилось или исчезло: перерисовать карточки и кадр без анимации
+          wideMq.addEventListener('change', () => {
+            if (!on) return;
+            activeKey = '';
+            rvReset();
+            request();
+          });
           sync();
         }
       }
