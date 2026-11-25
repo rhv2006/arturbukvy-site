@@ -283,6 +283,10 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
   .work-section.is-gl .work-gl {
     display: block;
   }
+  /* запас снизу нужен только ленте (боковые карточки в перспективе выше сцены) */
+  .work-section.is-gl[data-mode='grid'] .work-gl {
+    bottom: 0;
+  }
 
   /* ---- сетка (DOM) ---- */
   .work-grid {
@@ -579,12 +583,14 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
     varying vec2 vUv;
     varying vec2 vNdc;
     varying float vBend;
+    varying float vHang;
     const float PI = 3.14159265;
     void main() {
       vUv = uv;
       vec4 w = modelMatrix * vec4(position, 1.0);
       w.z += min(uCurve * w.x * w.x, uZMax);
       float bend = 0.0;
+      float hang = 0.0;
       float d = w.y - uRollY0;
       if (uRollOn > 0.0 && d > 0.0) {
         // лист перегибается через валик радиуса r (пол-оборота) и дальше просто свисает вниз за карточкой
@@ -595,8 +601,10 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
         w.y = mix(w.y, yz.x, uRollOn);
         w.z += yz.y * uRollOn;
         bend = min(a / PI, 1.0) * uRollOn;
+        hang = max(0.0, d - PI * uRollR) * uRollOn;
       }
       vBend = bend;
+      vHang = hang;
       gl_Position = projectionMatrix * viewMatrix * w;
       vNdc = gl_Position.xy / gl_Position.w;
     }
@@ -612,9 +620,11 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
     uniform float uVel;
     uniform float uHover;
     uniform float uRadius;
+    uniform float uRollR;
     varying vec2 vUv;
     varying vec2 vNdc;
     varying float vBend;
+    varying float vHang;
     // у PNG-обложек бывает прозрачный фон: цвет под нулевой альфой мусорный (лесенка по краям),
     // поэтому картинка кладётся на подложку цвета --surface, как DOM-карточка
     vec3 onBase(vec2 p) {
@@ -641,6 +651,9 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       vec2 q = abs((vUv - 0.5) * uPlane) - uPlane * 0.5 + uRadius;
       float dist = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - uRadius;
       float a = (1.0 - smoothstep(-1.0, 0.5, dist)) * uAlpha;
+      // свисающий за валиком хвост короткий: растворяется на длине ~радиуса валика,
+      // иначе нижний ряд плитки свисал бы на следующую секцию
+      a *= 1.0 - smoothstep(0.0, uRollR * 1.2, vHang);
       // свёрнутая часть темнеет по ходу оборота: свисающий рулон не спорит с подписями поверх него
       float shade = 1.0 - 0.6 * smoothstep(0.0, 0.6, vBend);
       gl_FragColor = vec4(vec3(r, g, b) * shade, a);
