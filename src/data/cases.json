@@ -28,7 +28,8 @@
       "top": 3,
       "url": "https://www.behance.net/gallery/203957449/Key-visuals-for-app",
       "cover": "https://mir-s3-cdn-cf.behance.net/projects/404/fbd1af203957449.Y3JvcCw3NTYsNTkxLDQ4OCwxMjc.jpg",
-      "date": "2024-07-24"
+      "date": "2024-07-24",
+      "loop": "/video/alfa-card.mp4"
     },
     "200672141": {
       "title": "Key Visual для сервиса МТС Kodify",
