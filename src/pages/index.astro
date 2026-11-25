@@ -21,6 +21,7 @@ const site = {
   automation: 'https://teletype.in/@rhv2006',
   reelVimeo: 'https://vimeo.com/1218208289',
   resumePdf: '/fattakhov-resume.pdf',
+  resumePdfEn: '/fattakhov-resume-en.pdf',
 };
 
 // Работы не с Behance: идут последними в «Ещё работах». Если файла обложки в public/ ещё нет,
@@ -481,7 +482,10 @@ const dateRu = (iso: string) =>
           <h3>Всё то же самое — одним файлом</h3>
           <p>Резюме в PDF для тех, кому некогда листать.</p>
         </div>
-        <a class="btn btn-primary" href={site.resumePdf} target="_blank" rel="noopener">Скачать резюме PDF</a>
+        <div class="xp-cta-btns">
+          <a class="btn btn-primary" href={site.resumePdf} target="_blank" rel="noopener">Скачать резюме PDF</a>
+          <a class="btn btn-ghost" href={site.resumePdfEn} target="_blank" rel="noopener" hreflang="en" lang="en">CV in English</a>
+        </div>
       </section>
 
       {

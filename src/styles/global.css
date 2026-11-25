@@ -1808,6 +1808,12 @@ html:has(dialog[open]) .cursor {
   color: var(--muted);
 }
 
+.xp-cta-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 /* ---------- articles ---------- */
 
 .articles {
