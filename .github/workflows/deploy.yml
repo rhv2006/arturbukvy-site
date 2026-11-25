@@ -25,6 +25,9 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
   AWS_DEFAULT_REGION: ru-central1
+  # Канал от раннера GitHub до Object Storage медленный и иногда отвечает 500 — повторяем запросы.
+  AWS_RETRY_MODE: standard
+  AWS_MAX_ATTEMPTS: 8
   S3: aws s3 --endpoint-url=https://storage.yandexcloud.net
 
 jobs:
@@ -39,14 +42,30 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      # Новый CRT-клиент AWS CLI рвёт соединение, если скорость ниже порога («throughput minimum»),
+      # а до Object Storage она бывает ~250 КБ/с. Классический клиент медленнее, но не обрывает загрузку.
+      - name: AWS CLI classic transfer client
+        run: aws configure set default.s3.preferred_transfer_client classic
+
       # Файлы в _astro с хешем в имени не меняются — браузер может хранить их год.
       - name: Upload hashed assets
         run: $S3 sync dist/_astro "s3://$BUCKET/_astro" --cache-control "public, max-age=31536000, immutable"
 
-      # Остальное (страница, видео, обложки, резюме) — короткий кеш, чтобы правки появлялись быстро.
+      # Тяжёлые файлы (видео, картинки, резюме) сравниваются только по размеру: сборка каждый раз даёт им
+      # новую дату, и без --size-only все ~19 МБ заливались бы заново на каждом деплое.
+      - name: Upload media
+        run: >-
+          $S3 sync dist "s3://$BUCKET" --size-only --delete --cache-control "public, max-age=300"
+          --exclude "*" --include "video/*" --include "xp/*" --include "covers/*"
+          --include "*.pdf" --include "*.jpg" --include "*.png" --include "*.webp"
+
+      # Остальное (страницы, sitemap, иконки) — каждый раз, короткий кеш, чтобы правки появлялись быстро.
       # --delete убирает из бакета файлы, которых больше нет в сборке.
       - name: Upload site
-        run: $S3 sync dist "s3://$BUCKET" --exclude "_astro/*" --cache-control "public, max-age=300" --delete
+        run: >-
+          $S3 sync dist "s3://$BUCKET" --cache-control "public, max-age=300" --delete
+          --exclude "_astro/*" --exclude "video/*" --exclude "xp/*" --exclude "covers/*"
+          --exclude "*.pdf" --exclude "*.jpg" --exclude "*.png" --exclude "*.webp"
 
       - name: Remove stale hashed assets
         run: $S3 sync dist/_astro "s3://$BUCKET/_astro" --delete
