@@ -59,4 +59,6 @@ const typography = {
 export default defineConfig({
   site: 'https://xn--80acd5a2aanic6f.xn--p1ai',
   integrations: [typography],
+  // /опросник — то же, что /oprosnik
+  redirects: { '/опросник': '/oprosnik/' },
 });
