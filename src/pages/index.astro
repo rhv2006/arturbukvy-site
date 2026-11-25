@@ -348,7 +348,7 @@ const dateRu = (iso: string) =>
             <div class="wrap xp-bar" aria-hidden="true">
               <span class="xp-comp">COMP · experience_{TL_FROM}–{TL_TO - 1}</span>
               <span class="xp-tc" data-xp-tc>{TL_FROM}.01</span>
-              <span class="xp-pct"><span data-xp-pct>0%</span> · листайте ↓</span>
+              <span class="xp-pct"><span data-xp-pct>0%</span> · <span data-xp-hint>листайте ↓ или жмите пробел</span></span>
             </div>
             <div class="wrap xp-cards">
               <ol class="xp-list">
@@ -845,6 +845,8 @@ const dateRu = (iso: string) =>
           const list = sec.querySelector<HTMLElement>('.xp-list')!;
           const tcEl = sec.querySelector<HTMLElement>('[data-xp-tc]')!;
           const pctEl = sec.querySelector<HTMLElement>('[data-xp-pct]')!;
+          const hintEl = sec.querySelector<HTMLElement>('[data-xp-hint]')!;
+          const HINT = hintEl.textContent;
           const jobs = [...sec.querySelectorAll<HTMLElement>('.xp-job')];
           const clips = [...sec.querySelectorAll<HTMLElement>('.xp-clip')];
           const layers = [...sec.querySelectorAll<HTMLElement>('.xp-layer')];
@@ -906,9 +908,79 @@ const dateRu = (iso: string) =>
               doneCount = n;
             }
             setActive(year);
+            autoCheck(r, p);
           };
 
           const request = () => (raf ||= requestAnimationFrame(frame));
+
+          // Автопроигрывание, как в After Effects: когда сцена закрепляется при прокрутке вниз,
+          // страница сама докручивает таймлайн до конца (весь путь 2011→2026 — ~6 с).
+          // Пробел — пауза/дальше; колесо, клавиши, тач или клик — стоп, дальше листаете сами.
+          // Подсказка — на курсоре (над сценой) и в строке сверху. Снова само запустится,
+          // только если уйти из секции и вернуться.
+          const FULL_MS = 6000;
+          const stage = sec.querySelector<HTMLElement>('.xp-stage')!;
+          const cursorLabel = document.querySelector<HTMLElement>('.cursor-label');
+          let play = 0, playT0 = 0, autoDone = false, lastY = scrollY;
+          const setHint = (playing: boolean) => {
+            hintEl.textContent = playing ? 'пробел — пауза · колесо — листать самому' : HINT;
+            const atEnd = !playing && scroller.getBoundingClientRect().bottom <= innerHeight + 2;
+            stage.dataset.cursor = playing ? 'Пробел — пауза' : atEnd ? 'Листайте ↓' : 'Пробел — дальше';
+            // подпись курсора обновляется на движении мыши; если мышь стоит над сценой — меняем сразу
+            if (cursorLabel && stage.matches(':hover')) cursorLabel.textContent = stage.dataset.cursor;
+          };
+          const pinned = (r = scroller.getBoundingClientRect()) => r.top <= 1 && r.bottom >= innerHeight - 1;
+          const stop = () => {
+            if (!play) return;
+            cancelAnimationFrame(play);
+            play = 0;
+            setHint(false);
+          };
+          const start = () => {
+            const from = scrollY;
+            const to = scroller.getBoundingClientRect().top + scrollY + total;
+            if (to - from < 2) return false;
+            const dur = Math.max(600, (FULL_MS * (to - from)) / total);
+            playT0 = performance.now();
+            setHint(true);
+            const step = (now: number) => {
+              const k = Math.min(1, (now - playT0) / dur);
+              const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2; // мягкий старт и финиш
+              scrollTo({ top: from + (to - from) * e, behavior: 'instant' });
+              if (k < 1) play = requestAnimationFrame(step);
+              else stop();
+            };
+            play = requestAnimationFrame(step);
+            return true;
+          };
+          // вызывается из frame(): запуск при входе в сцену сверху, сброс — когда секция ушла с экрана
+          const autoCheck = (r: DOMRect, p: number) => {
+            const down = scrollY > lastY;
+            lastY = scrollY;
+            if (r.bottom < 0 || r.top > innerHeight) autoDone = false;
+            else if (!autoDone && !play && down && pinned(r) && p < 0.5) {
+              autoDone = true;
+              start();
+            }
+          };
+          // инерция колеса/тачпада, которая докатила до сцены, не должна сразу гасить автоплей
+          const onWheel = (e: WheelEvent) => {
+            if (play && (e.deltaY < 0 || performance.now() - playT0 > 700)) stop();
+          };
+          const onKey = (e: KeyboardEvent) => {
+            if (e.code !== 'Space') {
+              if (play && /^(Arrow|Page|Home|End)/.test(e.key)) stop();
+              return;
+            }
+            if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+            if ((e.target as HTMLElement).closest('input, textarea, select, button, a, [contenteditable], dialog')) return;
+            if (play) {
+              e.preventDefault();
+              stop();
+            } else if (pinned() && start()) {
+              e.preventDefault();
+            }
+          };
           const onResize = () => {
             measure();
             request();
@@ -918,20 +990,31 @@ const dateRu = (iso: string) =>
             if (on) return;
             on = true;
             sec.classList.add('xp-on');
+            setHint(false);
             activeKey = '';
             doneCount = 0;
             measure();
             frame();
             addEventListener('scroll', request, { passive: true });
             addEventListener('resize', onResize, { passive: true });
+            addEventListener('keydown', onKey);
+            addEventListener('wheel', onWheel, { passive: true });
+            addEventListener('touchstart', stop, { passive: true });
+            addEventListener('pointerdown', stop, { passive: true });
           };
 
           const disable = () => {
             if (!on) return;
             on = false;
             sec.classList.remove('xp-on');
+            delete stage.dataset.cursor;
             removeEventListener('scroll', request);
             removeEventListener('resize', onResize);
+            removeEventListener('keydown', onKey);
+            removeEventListener('wheel', onWheel);
+            removeEventListener('touchstart', stop);
+            removeEventListener('pointerdown', stop);
+            stop();
             cancelAnimationFrame(raf);
             raf = 0;
             [...jobs, ...clips, ...layers].forEach((el) => el.classList.remove('is-active', 'is-on'));
