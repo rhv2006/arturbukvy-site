@@ -1176,10 +1176,16 @@ const dateRu = (iso: string) =>
 
       const dialog = document.querySelector<HTMLDialogElement>('dialog.reel')!;
       const player = dialog.querySelector('video')!;
-      document.querySelector('[data-open-reel]')?.addEventListener('click', () => {
+      const openReel = () => {
         if (!player.src) player.src = player.dataset.src!;
         dialog.showModal();
         player.play().catch(() => {});
+      };
+      document.querySelector('[data-open-reel]')?.addEventListener('click', openReel);
+      // На первом экране курсор — кнопка плей: клик по любому месту, кроме ссылок, кнопок и выделенного текста, открывает шоурил
+      document.querySelector('.hero')?.addEventListener('click', (e) => {
+        if ((e.target as Element).closest('a, button') || String(getSelection() ?? '')) return;
+        openReel();
       });
       const close = () => dialog.close();
       dialog.querySelector('[data-close-reel]')?.addEventListener('click', close);
