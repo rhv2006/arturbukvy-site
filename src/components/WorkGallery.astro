@@ -1,0 +1,1318 @@
+---
+// Блок работ (#work): WebGL-галерея с двумя режимами — «Лента» (изогнутая карусель) и «Плитка» (сетка,
+// которая у верхнего края окна сворачивается назад, как лист на рулоне).
+//
+// DOM — источник правды: ссылки, заголовки, подписи и сетка лежат в разметке. WebGL только рисует картинки:
+// по одной плоскости на кейс, текстура — обложка (или ролик). Без WebGL, при prefers-reduced-motion
+// и на экранах уже 768px остаётся обычная DOM-сетка и свайп-слайдер.
+//
+// Обложки Behance пережимаются при сборке в WebP на нашем домене: у CDN Behance нет CORS-заголовков,
+// а без них картинку нельзя загрузить в WebGL-текстуру.
+import { getImage } from 'astro:assets';
+import type { Case } from '../lib/behance';
+import { existsSync } from 'node:fs';
+
+interface Props {
+  top: Case[];
+  rest: Case[];
+  behance: string;
+}
+const { top, rest, behance } = Astro.props;
+
+// Работы не с Behance: идут последними. Если файла обложки в public/ ещё нет, карточка рисуется заглушкой с названием.
+const extraWorks = [
+  {
+    title: 'ИИ-видео',
+    tag: 'AI · Видео',
+    url: 'https://drive.google.com/drive/folders/1nfMy5gJ08VQH_HjSKECRCW_tQ4_V_fbi?usp=sharing',
+    cover: '/covers/ai-video.jpg',
+    stub: 'AI video',
+    icon: 'player',
+  },
+  {
+    title: '3D-видео для мобильных игр',
+    tag: '3D · Мобильные игры',
+    url: 'https://drive.google.com/drive/folders/18aM7jQJYHcGfdYxQP0vLomixtc8FWcZ6?usp=sharing',
+    cover: '/covers/mobile-games.jpg',
+    stub: 'Mobile games',
+    icon: 'gamepad',
+  },
+];
+
+// Обложка с Behance → WebP до 1600px на нашем домене. Если сеть недоступна — исходная ссылка,
+// тогда плоскость в WebGL остаётся тёмной, а DOM-картинка видна в фолбэке как обычно.
+const localCover = async (src: string) => {
+  if (!/^https?:/.test(src)) return src;
+  try {
+    const img = await getImage({ src, inferSize: true, format: 'webp', quality: 86 });
+    if ((img.attributes.width as number) > 1600) {
+      return (await getImage({ src, inferSize: true, width: 1600, format: 'webp', quality: 86 })).src;
+    }
+    return img.src;
+  } catch (err) {
+    console.warn(`[work] не удалось пережать обложку ${src}: ${(err as Error).message}`);
+    return src;
+  }
+};
+
+type Item = {
+  title: string;
+  tag?: string;
+  url: string;
+  cover?: string;
+  loop?: string;
+  videos?: string[];
+  stub?: string;
+  icon?: string;
+};
+
+const items: Item[] = await Promise.all([
+  ...[...top, ...rest].map(async (c) => ({
+    title: c.title,
+    tag: c.tag,
+    url: c.url,
+    cover: await localCover(c.cover),
+    loop: c.loop,
+    videos: c.videos,
+  })),
+  ...extraWorks.map(async (w) => ({
+    title: w.title,
+    tag: w.tag,
+    url: w.url,
+    cover: existsSync(`public${w.cover}`) ? w.cover : undefined,
+    stub: w.stub,
+    icon: w.icon,
+  })),
+]);
+const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.cover ? 'img' : 'stub');
+---
+
+<section id="work" class="section work-section" data-work data-mode="ribbon">
+  <h2 class="work-sr">Избранные работы</h2>
+  <div class="wrap work-controls">
+    <div class="work-modes" role="group" aria-label="Вид">
+      <button class="work-mode" type="button" data-mode-btn="ribbon" aria-label="Лентой" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M2 7.5c0-.8.7-1.4 1.5-1.2l2 .5v10.4l-2 .5c-.8.2-1.5-.4-1.5-1.2zM22 7.5c0-.8-.7-1.4-1.5-1.2l-2 .5v10.4l2 .5c.8.2 1.5-.4 1.5-1.2zM7.5 6h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" />
+        </svg>
+      </button>
+      <button class="work-mode" type="button" data-mode-btn="grid" aria-label="Плиткой" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
+        </svg>
+      </button>
+    </div>
+    <a class="link link-accent work-behance" href={behance} target="_blank" rel="noopener">Все проекты на Behance ↗</a>
+  </div>
+
+  <div class="work-stage">
+    <div class="work-gl" aria-hidden="true"><canvas class="work-canvas"></canvas></div>
+
+    <!-- Лента в WebGL-режиме: подпись и рамка активной карточки; карточки рисует canvas -->
+    <div class="work-ribbon" data-cursor="← Тяните →" tabindex="0" role="group" aria-roledescription="карусель" aria-label="Работы: стрелки ← → листают ленту">
+      <a class="work-frame" href={items[0]?.url} target="_blank" rel="noopener" data-cursor="Смотреть" draggable="false">
+        <span class="work-corner work-corner-tl" aria-hidden="true"></span>
+        <span class="work-corner work-corner-tr" aria-hidden="true"></span>
+        <span class="work-corner work-corner-bl" aria-hidden="true"></span>
+        <span class="work-corner work-corner-br" aria-hidden="true"></span>
+        <span class="work-sr" data-frame-label>{items[0]?.title}</span>
+      </a>
+      <div class="work-caption" aria-live="polite">
+        <p class="work-cap-title" data-cap-title>{items[0]?.title}</p>
+        <p class="work-cap-tag" data-cap-tag>{items[0]?.tag}</p>
+      </div>
+      <div class="work-hint" aria-hidden="true">← тяните →</div>
+    </div>
+
+    <ol class="wrap work-grid">
+      {
+        items.map((c, i) => (
+          <li class="work-item" data-kind={kindOf(c)}>
+            <a class="work-link" href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть" draggable="false">
+              <div class="work-media">
+                {c.cover && (
+                  <img class="work-img" src={c.cover} alt="" loading={i < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false" />
+                )}
+                {c.loop && <video class="work-video" data-src={c.loop} muted loop playsinline preload="none" aria-hidden="true" />}
+                {c.videos && (
+                  <div class="work-banners">
+                    {c.videos.map((src) => (
+                      <div class="work-banner">
+                        <video class="work-video" data-src={src} muted loop playsinline preload="none" aria-hidden="true" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!c.cover && (
+                  <div class="work-stub" aria-hidden="true">
+                    {c.icon === 'player' && (
+                      <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+                        <rect x="2" y="2" width="60" height="44" rx="6" />
+                        <path d="M2 12h60" />
+                        <circle cx="9" cy="7" r="1.2" fill="currentColor" />
+                        <circle cx="15" cy="7" r="1.2" fill="currentColor" />
+                        <circle cx="21" cy="7" r="1.2" fill="currentColor" />
+                        <path d="M27 20v14l12-7z" fill="currentColor" />
+                        <path d="M10 40h44" opacity=".5" />
+                        <path d="M10 40h18" />
+                      </svg>
+                    )}
+                    {c.icon === 'gamepad' && (
+                      <svg viewBox="0 0 64 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+                        <path d="M18 4h28c8 0 13 6 15 16l2 11c1 7-5 11-10 7l-7-6H18l-7 6c-5 4-11 0-10-7l2-11C5 10 10 4 18 4z" />
+                        <path d="M17 14v12M11 20h12" />
+                        <circle cx="44" cy="16" r="2" fill="currentColor" />
+                        <circle cx="50" cy="22" r="2" fill="currentColor" />
+                      </svg>
+                    )}
+                    <span>{c.stub}</span>
+                  </div>
+                )}
+              </div>
+              <div class="work-meta">
+                <div>
+                  <h3 class="work-title">{c.title}</h3>
+                  {c.tag && <p class="work-tag">{c.tag}</p>}
+                </div>
+                <span class="work-arrow" aria-hidden="true">↘</span>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style is:global>
+  .work-section {
+    position: relative;
+  }
+
+  /* ---- фильтры и переключатель вида ---- */
+  .work-controls {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px 20px;
+    margin-bottom: 32px;
+  }
+  .work-modes {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: rgb(11 11 13 / 0.6);
+  }
+  .work-behance {
+    grid-column: 3;
+    justify-self: end;
+  }
+  @media (max-width: 767px) {
+    .work-controls {
+      grid-template-columns: auto 1fr;
+    }
+    .work-modes {
+      grid-column: 1;
+    }
+    .work-behance {
+      grid-column: 2;
+    }
+  }
+  .work-mode {
+    font: 600 14px/1 var(--body);
+    color: var(--muted);
+    background: none;
+    border: 0;
+    border-radius: 99px;
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      background-color 0.2s;
+  }
+  .work-mode {
+    display: grid;
+    place-items: center;
+    padding: 8px 12px;
+  }
+  .work-mode svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+  .work-mode:hover {
+    color: var(--text);
+  }
+  .work-mode[aria-pressed='true'] {
+    color: var(--accent-ink);
+    background: var(--accent);
+  }
+  .work-mode:focus-visible,
+  .work-ribbon:focus-visible,
+  .work-link:focus-visible,
+  .work-frame:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ---- сцена ---- */
+  .work-stage {
+    position: relative;
+  }
+  /* холст на видимую часть секции: липкий внутри слоя на всю сцену; overflow: clip не ломает sticky */
+  .work-gl {
+    position: absolute;
+    inset: -160px 0;
+    z-index: 1;
+    overflow: clip;
+    pointer-events: none;
+    display: none;
+  }
+  .work-canvas {
+    position: sticky;
+    top: 0;
+    display: block;
+    width: 100%;
+    height: 100vh;
+  }
+  .work-section.is-gl .work-gl {
+    display: block;
+  }
+
+  /* ---- сетка (DOM) ---- */
+  .work-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px 24px;
+    margin: 0 auto;
+    padding-block: 0;
+    list-style: none;
+  }
+  @media (min-width: 768px) {
+    .work-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 72px 32px;
+    }
+  }
+  .work-link {
+    display: block;
+    -webkit-user-drag: none;
+  }
+  .work-media {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .work-img,
+  .work-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .work-media > .work-video,
+  .work-banners {
+    opacity: 0;
+    transition: opacity 0.8s;
+  }
+  .work-media > .work-video.is-ready,
+  .work-banners:has(.is-ready) {
+    opacity: 1;
+  }
+  .work-banners {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    gap: 12px;
+    padding: 6%;
+    background: rgb(11 11 13 / 0.72);
+    backdrop-filter: blur(14px);
+  }
+  .work-banner {
+    position: relative;
+    aspect-ratio: 3 / 1;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  .work-stub {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 6%;
+    container-type: inline-size;
+    color: var(--accent);
+    background:
+      radial-gradient(circle at 30% 30%, rgb(212 255 58 / 0.35), transparent 55%),
+      radial-gradient(circle at 75% 75%, rgb(212 255 58 / 0.15), transparent 50%),
+      var(--surface);
+  }
+  .work-stub svg {
+    width: 26%;
+    height: auto;
+  }
+  .work-stub span {
+    font: 700 11cqi / 1 var(--display);
+    white-space: nowrap;
+  }
+  .work-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .work-title {
+    font: 700 clamp(17px, 1.5vw, 22px) / 1.25 var(--body);
+    letter-spacing: 0;
+  }
+  .work-tag {
+    margin: 6px 0 0;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .work-arrow {
+    font: 500 22px/1 var(--display);
+    color: var(--muted);
+    transition:
+      color 0.2s,
+      transform 0.25s;
+  }
+  .work-link:hover .work-arrow {
+    color: var(--accent);
+    transform: translate(2px, 2px);
+  }
+  .work-link:hover .work-title {
+    color: var(--accent);
+  }
+
+  /* ---- фолбэк-лента: свайп-слайдер без шейдеров ---- */
+  .work-section:not(.is-gl)[data-mode='ribbon'] .work-grid {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+  }
+  .work-section:not(.is-gl)[data-mode='ribbon'] .work-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .work-section:not(.is-gl)[data-mode='ribbon'] .work-item {
+    flex: 0 0 min(84%, 640px);
+    scroll-snap-align: center;
+  }
+
+  /* ---- WebGL-режим ---- */
+  .work-ribbon {
+    display: none;
+  }
+  /* картинки рисует холст; DOM-картинки и ролики остаются в разметке, но прозрачные */
+  .work-section.is-gl .work-media {
+    background: none;
+  }
+  .work-section.is-gl .work-media > * {
+    opacity: 0 !important;
+  }
+  .work-section.is-gl .work-meta {
+    position: relative;
+    z-index: 2;
+  }
+  .work-section.is-gl[data-mode='ribbon'] .work-grid {
+    position: absolute;
+    inset: 0 0 auto;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .work-section.is-gl[data-mode='ribbon'] .work-stage {
+    height: var(--work-ribbon-h, 80vh);
+  }
+  .work-section.is-gl[data-mode='ribbon'] .work-ribbon {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .work-ribbon.is-drag {
+    cursor: grabbing;
+  }
+  .work-ribbon:focus-visible {
+    outline-offset: -4px;
+  }
+
+  /* рамка активной карточки: тонкая линия и «+» по углам */
+  .work-frame {
+    position: absolute;
+    left: var(--fx, 0);
+    top: var(--fy, 0);
+    width: var(--fw, 0);
+    height: var(--fh, 0);
+    border: 1px solid var(--line);
+    border-radius: calc(var(--radius) + 6px);
+    margin: -8px;
+    box-sizing: content-box;
+    padding: 8px;
+    color: var(--line);
+    transition:
+      color 0.25s,
+      border-color 0.25s;
+  }
+  .work-frame:hover {
+    color: var(--accent);
+    border-color: rgb(212 255 58 / 0.45);
+  }
+  .work-corner {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+  }
+  .work-corner::before,
+  .work-corner::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+    left: 7px;
+    top: 0;
+    width: 1px;
+    height: 15px;
+  }
+  .work-corner::after {
+    left: 0;
+    top: 7px;
+    width: 15px;
+    height: 1px;
+  }
+  .work-corner-tl {
+    left: -8px;
+    top: -8px;
+  }
+  .work-corner-tr {
+    right: -8px;
+    top: -8px;
+  }
+  .work-corner-bl {
+    left: -8px;
+    bottom: -8px;
+  }
+  .work-corner-br {
+    right: -8px;
+    bottom: -8px;
+  }
+  .work-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .work-caption {
+    position: absolute;
+    left: 50%;
+    top: var(--cy, 0);
+    width: min(92%, 900px);
+    translate: -50% 0;
+    text-align: center;
+    pointer-events: none;
+  }
+  .work-cap-title {
+    margin: 0;
+    font: 600 clamp(22px, 2.6vw, 40px) / 1.1 var(--display);
+    letter-spacing: -0.02em;
+  }
+  .work-cap-tag {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .work-caption.is-swap .work-cap-title,
+  .work-caption.is-swap .work-cap-tag {
+    animation: work-cap-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @keyframes work-cap-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  .work-hint {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  import { Renderer, Camera, Transform, Plane, Program, Mesh, Texture } from 'ogl';
+
+  const VERTEX = /* glsl */ `
+    attribute vec3 position;
+    attribute vec2 uv;
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
+    uniform mat4 projectionMatrix;
+    uniform float uCurve;   // лента: z += uCurve * x² — края ближе к камере (внутренняя сторона цилиндра)
+    uniform float uZMax;
+    uniform float uRollOn;  // плитка: сворачивание у верхнего края
+    uniform float uRollY0;
+    uniform float uRollR;
+    varying vec2 vUv;
+    varying vec2 vNdc;
+    varying float vBend;
+    const float PI = 3.14159265;
+    void main() {
+      vUv = uv;
+      vec4 w = modelMatrix * vec4(position, 1.0);
+      w.z += min(uCurve * w.x * w.x, uZMax);
+      float bend = 0.0;
+      float d = w.y - uRollY0;
+      if (uRollOn > 0.0 && d > 0.0) {
+        // лист перегибается через валик радиуса r (пол-оборота) и дальше просто свисает вниз за карточкой
+        float a = d / uRollR;
+        vec2 yz = a < PI
+          ? vec2(uRollY0 + uRollR * sin(a), -uRollR * (1.0 - cos(a)))
+          : vec2(uRollY0 - (d - PI * uRollR), -2.0 * uRollR);
+        w.y = mix(w.y, yz.x, uRollOn);
+        w.z += yz.y * uRollOn;
+        bend = min(a / PI, 1.0) * uRollOn;
+      }
+      vBend = bend;
+      gl_Position = projectionMatrix * viewMatrix * w;
+      vNdc = gl_Position.xy / gl_Position.w;
+    }
+  `;
+
+  const FRAGMENT = /* glsl */ `
+    precision highp float;
+    uniform sampler2D tMap;
+    uniform vec2 uPlane;
+    uniform vec2 uImage;
+    uniform float uAlpha;
+    uniform float uEdge;
+    uniform float uVel;
+    uniform float uHover;
+    uniform float uRadius;
+    varying vec2 vUv;
+    varying vec2 vNdc;
+    varying float vBend;
+    // у PNG-обложек бывает прозрачный фон: цвет под нулевой альфой мусорный (лесенка по краям),
+    // поэтому картинка кладётся на подложку цвета --surface, как DOM-карточка
+    vec3 onBase(vec2 p) {
+      vec4 c = texture2D(tMap, p);
+      return mix(vec3(0.0824, 0.0824, 0.0941), c.rgb, c.a);
+    }
+    void main() {
+      // как object-fit: cover
+      vec2 ratio = vec2(
+        min((uPlane.x / uPlane.y) / (uImage.x / uImage.y), 1.0),
+        min((uPlane.y / uPlane.x) / (uImage.y / uImage.x), 1.0)
+      );
+      vec2 uv = vUv * ratio + (1.0 - ratio) * 0.5;
+      // хроматическая аберрация: R и B сдвинуты в разные стороны вдоль направления от центра экрана;
+      // растёт к краям, на изгибе рулона и от скорости
+      float len = length(vNdc);
+      vec2 dir = len > 0.0001 ? vNdc / len : vec2(0.0);
+      float s = (uEdge * len * len * 0.55 + vBend * 1.6 + uVel + uHover * 0.2) * 0.012;
+      vec2 off = dir * s;
+      float r = onBase(clamp(uv + off, 0.0, 1.0)).r;
+      float g = onBase(uv).g;
+      float b = onBase(clamp(uv - off, 0.0, 1.0)).b;
+      // скруглённые углы
+      vec2 q = abs((vUv - 0.5) * uPlane) - uPlane * 0.5 + uRadius;
+      float dist = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - uRadius;
+      float a = (1.0 - smoothstep(-1.0, 0.5, dist)) * uAlpha;
+      // свёрнутая часть темнеет по ходу оборота: свисающий рулон не спорит с подписями поверх него
+      float shade = 1.0 - 0.6 * smoothstep(0.0, 0.6, vBend);
+      gl_FragColor = vec4(vec3(r, g, b) * shade, a);
+    }
+  `;
+
+  type Rect = { x: number; y: number; w: number; h: number }; // центр и размер, в координатах окна
+  type Kind = 'img' | 'loop' | 'banners' | 'stub';
+  type Item = {
+    li: HTMLLIElement;
+    media: HTMLElement;
+    kind: Kind;
+    img: HTMLImageElement | null;
+    videos: HTMLVideoElement[];
+    title: string;
+    tag: string;
+    url: string;
+    // WebGL
+    mesh?: Mesh;
+    tex?: Texture;
+    uni?: Record<string, { value: any }>;
+    loaded: boolean;
+    live: boolean; // текстура — играющий ролик, обновляется каждый кадр
+    canvas2d?: HTMLCanvasElement;
+    bg2d?: HTMLCanvasElement;
+    cur: Rect | null;
+    from: Rect | null;
+    t0: number;
+    dur: number;
+    hover: number;
+    hoverTo: number;
+    onScreen: boolean;
+  };
+
+  const sec = document.querySelector<HTMLElement>('[data-work]');
+  if (sec) initWork(sec);
+
+  function initWork(sec: HTMLElement) {
+    const stage = sec.querySelector<HTMLElement>('.work-stage')!;
+    const canvas = sec.querySelector<HTMLCanvasElement>('.work-canvas')!;
+    const glWrap = sec.querySelector<HTMLElement>('.work-gl')!;
+    const list = sec.querySelector<HTMLElement>('.work-grid')!;
+    const ribbon = sec.querySelector<HTMLElement>('.work-ribbon')!;
+    const frameEl = sec.querySelector<HTMLAnchorElement>('.work-frame')!;
+    const frameLabel = sec.querySelector<HTMLElement>('[data-frame-label]')!;
+    const caption = sec.querySelector<HTMLElement>('.work-caption')!;
+    const capTitle = sec.querySelector<HTMLElement>('[data-cap-title]')!;
+    const capTag = sec.querySelector<HTMLElement>('[data-cap-tag]')!;
+    const modeBtns = [...sec.querySelectorAll<HTMLButtonElement>('[data-mode-btn]')];
+    const pill = document.querySelector<HTMLElement>('.topbar-pill');
+    const reduceMq = matchMedia('(prefers-reduced-motion: reduce)');
+    const wideMq = matchMedia('(min-width: 768px)');
+
+    const items: Item[] = [...list.querySelectorAll<HTMLLIElement>('.work-item')].map((li) => ({
+      li,
+      media: li.querySelector<HTMLElement>('.work-media')!,
+      kind: li.dataset.kind as Kind,
+      img: li.querySelector<HTMLImageElement>('.work-img'),
+      videos: [...li.querySelectorAll<HTMLVideoElement>('.work-video')],
+      // текст из разметки: в сборке типограф уже расставил в нём неразрывные пробелы после предлогов
+      title: li.querySelector('.work-title')?.textContent ?? '',
+      tag: li.querySelector('.work-tag')?.textContent ?? '',
+      url: li.querySelector<HTMLAnchorElement>('.work-link')!.href,
+      loaded: false,
+      live: false,
+      cur: null,
+      from: null,
+      t0: 0,
+      dur: 0,
+      hover: 0,
+      hoverTo: 0,
+      onScreen: false,
+    }));
+
+    let mode: 'ribbon' | 'grid' = 'ribbon';
+    let glOn = false;
+
+    // неразрывный пробел после коротких слов и предлогов, как у типографа сборки
+    const nbsp = (t: string) => t.replace(/(^|[\s(«"])((?:[а-яёa-z]{1,2}|для|без|над|под|при|про|или|как|что)) (?=\S)/giu, '$1$2\u00a0');
+    const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2); // ease-in-out
+    const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+    // ---------- ролики: грузятся и играют, только пока видны ----------
+    const startVideo = (v: HTMLVideoElement) => {
+      if (!v.src && v.dataset.src) {
+        v.src = v.dataset.src;
+        v.addEventListener('playing', () => v.classList.add('is-ready'), { once: true });
+      }
+      if (v.paused) v.play().catch(() => {});
+    };
+    const stopVideo = (v: HTMLVideoElement) => {
+      if (!v.paused) v.pause();
+    };
+    // фолбэк: обычный IntersectionObserver по карточкам
+    const videoIo = new IntersectionObserver(
+      (entries) =>
+        entries.forEach(({ target, isIntersecting }) => {
+          if (glOn) return;
+          const it = items.find((i) => i.media === target);
+          it?.videos.forEach((v) => (isIntersecting && !reduceMq.matches ? startVideo(v) : stopVideo(v)));
+        }),
+      { rootMargin: '200px' },
+    );
+    items.forEach((it) => it.videos.length && videoIo.observe(it.media));
+
+    // ---------- переключатель вида (работает и без WebGL) ----------
+    const press = (btns: HTMLButtonElement[], on: HTMLButtonElement) =>
+      btns.forEach((b) => b.setAttribute('aria-pressed', String(b === on)));
+
+    modeBtns.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.modeBtn as 'ribbon' | 'grid', b)));
+
+    // ===================== WebGL =====================
+    let renderer: Renderer | null = null;
+    let gl: Renderer['gl'];
+    let camera: Camera;
+    let scene: Transform;
+    let geometry: Plane;
+    let glFailed = false;
+    let raf = 0;
+    let inView = false;
+    let cw = 0, ch = 0, camZ = 1;
+    let blend = 1, blendFrom = 1, blendTo = 1, blendT0 = 0; // 1 — лента, 0 — плитка
+    const MODE_MS = 900;
+
+    // общие для всех плоскостей uniforms
+    const shared = {
+      uCurve: { value: 0 },
+      uZMax: { value: 0 },
+      uRollOn: { value: 0 },
+      uRollY0: { value: 0 },
+      uRollR: { value: 100 },
+      uEdge: { value: 1 },
+      uVel: { value: 0 },
+      uRadius: { value: 14 },
+    };
+
+    // лента
+    let off = 0, tgt = 0, offPrev = 0, ribbonVel = 0;
+    let cardW = 0, cardH = 0, step = 0, cardTop = 0, ribbonH = 0;
+    let activeIdx = -1;
+    let lastScroll = scrollY, scrollVel = 0;
+
+    const webglSupported = () => {
+      try {
+        const c = document.createElement('canvas');
+        return !!(c.getContext('webgl2') || c.getContext('webgl'));
+      } catch {
+        return false;
+      }
+    };
+
+    const setupGl = () => {
+      if (renderer) return true;
+      if (glFailed || !webglSupported()) return !(glFailed = true);
+      try {
+        renderer = new Renderer({ canvas, dpr: Math.min(devicePixelRatio || 1, 1.5), alpha: true, antialias: true });
+      } catch {
+        glFailed = true;
+        return false;
+      }
+      gl = renderer.gl;
+      gl.clearColor(0, 0, 0, 0);
+      camera = new Camera(gl, { fov: 35, near: 1, far: 20000 });
+      scene = new Transform();
+      geometry = new Plane(gl, { width: 1, height: 1, widthSegments: 32, heightSegments: 16 });
+      shared.uRadius.value = parseFloat(getComputedStyle(sec).getPropertyValue('--radius')) || 14;
+
+      const blank = document.createElement('canvas');
+      blank.width = blank.height = 2;
+      const bctx = blank.getContext('2d')!;
+      bctx.fillStyle = '#151518';
+      bctx.fillRect(0, 0, 2, 2);
+
+      // если шейдер не собрался на этой видеокарте — остаёмся в DOM-фолбэке
+      try {
+        buildMeshes(blank);
+      } catch {
+        renderer = null;
+        glFailed = true;
+        return false;
+      }
+      return true;
+    };
+
+    const buildMeshes = (blank: HTMLCanvasElement) => {
+      items.forEach((it) => {
+        const tex = new Texture(gl, { image: blank, generateMipmaps: false, minFilter: gl.LINEAR, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
+        const uni = {
+          ...shared,
+          tMap: { value: tex },
+          uPlane: { value: [1, 1] },
+          uImage: { value: [2, 2] },
+          uAlpha: { value: 1 },
+          uHover: { value: 0 },
+        };
+        const program = new Program(gl, { vertex: VERTEX, fragment: FRAGMENT, uniforms: uni, transparent: true, cullFace: false });
+        if (!gl.getProgramParameter(program.program, gl.LINK_STATUS)) throw new Error('work: шейдер не собрался');
+        const mesh = new Mesh(gl, { geometry, program });
+        mesh.setParent(scene);
+        it.tex = tex;
+        it.uni = uni;
+        it.mesh = mesh;
+        if (it.kind === 'stub') void drawStub(it);
+        it.li.addEventListener('pointerenter', () => (it.hoverTo = 1));
+        it.li.addEventListener('pointerleave', () => (it.hoverTo = 0));
+      });
+    };
+
+    // заглушка без обложки: название на тёмной плашке
+    // заглушка без обложки — как прежняя карточка: лаймовые пятна на --surface, иконка и подпись акцентом
+    const drawStub = async (it: Item) => {
+      const W = 1280, H = 800;
+      const c = document.createElement('canvas');
+      c.width = W;
+      c.height = H;
+      const x = c.getContext('2d')!;
+      x.fillStyle = '#151518';
+      x.fillRect(0, 0, W, H);
+      const glow = (cx: number, cy: number, r: number, a: number) => {
+        const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `rgba(212, 255, 58, ${a})`);
+        g.addColorStop(1, 'rgba(212, 255, 58, 0)');
+        x.fillStyle = g;
+        x.fillRect(0, 0, W, H);
+      };
+      glow(W * 0.3, H * 0.3, Math.hypot(W * 0.7, H * 0.7) * 0.55, 0.35);
+      glow(W * 0.75, H * 0.75, Math.hypot(W * 0.75, H * 0.75) * 0.5, 0.15);
+      setImage(it, c, W, H);
+
+      const svg = it.li.querySelector('.work-stub svg');
+      const label = it.li.querySelector('.work-stub span')?.textContent ?? '';
+      const font = `700 ${Math.round(W * 0.11)}px 'Unbounded Variable', sans-serif`;
+      await document.fonts.load(font).catch(() => {});
+      let icon: HTMLImageElement | null = null;
+      if (svg) {
+        const src = new XMLSerializer().serializeToString(svg).replace(/currentColor/g, '#d4ff3a');
+        icon = new Image();
+        icon.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(src)}`;
+        await icon.decode().catch(() => (icon = null));
+      }
+      const iw = W * 0.26;
+      const vb = (svg as SVGSVGElement | null)?.viewBox.baseVal;
+      const ih = icon && vb ? (iw * vb.height) / vb.width : 0;
+      const th = W * 0.11, gap = H * 0.06;
+      const top = (H - (ih + (ih ? gap : 0) + th)) / 2;
+      if (icon) x.drawImage(icon, (W - iw) / 2, top, iw, ih);
+      x.fillStyle = '#d4ff3a';
+      x.font = font;
+      x.textAlign = 'center';
+      x.textBaseline = 'top';
+      x.fillText(label, W / 2, top + ih + (ih ? gap : 0));
+      setImage(it, c, W, H);
+    };
+
+    const setImage = (it: Item, src: TexImageSource, w: number, h: number) => {
+      it.tex!.image = src as any;
+      it.tex!.needsUpdate = true;
+      it.uni!.uImage.value = [w, h];
+      it.loaded = true;
+    };
+
+    // обложка в текстуру — лениво, когда плоскость подходит к экрану
+    const loadCover = (it: Item) => {
+      if (it.loaded || it.kind === 'stub' || !it.img || it.img.dataset.glLoading) return;
+      it.img.dataset.glLoading = '1';
+      const im = new Image();
+      im.decoding = 'async';
+      im.onload = () => {
+        if (it.live) return;
+        if (it.kind === 'banners') return composeBanners(it, im);
+        setImage(it, im, im.naturalWidth, im.naturalHeight);
+      };
+      im.src = it.img.currentSrc || it.img.src;
+    };
+
+    // ОТП: два баннера на размытой обложке собираются в одну 2D-текстуру
+    const composeBanners = (it: Item, cover: HTMLImageElement | null) => {
+      if (!it.canvas2d) {
+        it.canvas2d = document.createElement('canvas');
+        it.canvas2d.width = 1280;
+        it.canvas2d.height = 800;
+        it.bg2d = document.createElement('canvas');
+        it.bg2d.width = 1280;
+        it.bg2d.height = 800;
+      }
+      if (cover) {
+        const b = it.bg2d!.getContext('2d')!;
+        const sc = Math.max(1280 / cover.naturalWidth, 800 / cover.naturalHeight);
+        b.filter = 'blur(14px)';
+        b.drawImage(cover, (1280 - cover.naturalWidth * sc) / 2, (800 - cover.naturalHeight * sc) / 2, cover.naturalWidth * sc, cover.naturalHeight * sc);
+        b.filter = 'none';
+        b.fillStyle = 'rgba(11,11,13,0.72)';
+        b.fillRect(0, 0, 1280, 800);
+      }
+      drawBanners(it);
+      setImage(it, it.canvas2d, 1280, 800);
+    };
+    const drawBanners = (it: Item) => {
+      const x = it.canvas2d!.getContext('2d')!;
+      x.drawImage(it.bg2d!, 0, 0);
+      const pad = 1280 * 0.06, gap = 12 * 2;
+      const bw = 1280 - pad * 2, bh = bw / 3;
+      const y0 = (800 - (bh * 2 + gap)) / 2;
+      it.videos.forEach((v, i) => {
+        if (v.readyState < 2) return;
+        x.save();
+        x.beginPath();
+        x.roundRect(pad, y0 + i * (bh + gap), bw, bh, 16);
+        x.clip();
+        x.drawImage(v, pad, y0 + i * (bh + gap), bw, bh);
+        x.restore();
+      });
+    };
+
+    // ---------- размеры ----------
+    const measure = () => {
+      if (!renderer) return;
+      // OGL сам пишет размеры холста в style, поэтому меряем слой-обёртку и окно
+      cw = glWrap.clientWidth;
+      ch = innerHeight;
+      renderer.setSize(cw, ch);
+      camera.perspective({ aspect: cw / ch });
+      camZ = ch / 2 / Math.tan((35 * Math.PI) / 360);
+      camera.position.z = camZ;
+      camera.far = camZ * 4;
+      camera.perspective();
+      shared.uZMax.value = camZ * 0.62;
+      shared.uCurve.value = curveK();
+
+      ribbonH = Math.round(clamp(innerHeight * 0.8, 520, 900));
+      sec.style.setProperty('--work-ribbon-h', `${ribbonH}px`);
+      const capSpace = 130;
+      cardW = Math.min(cw * 0.4, (ribbonH - capSpace - 60) * 1.6, 980);
+      cardH = cardW / 1.6;
+      step = cardW * 1.08;
+      cardTop = Math.max(24, (ribbonH - capSpace - cardH) / 2);
+      sec.style.setProperty('--fx', `${(stage.clientWidth - cardW) / 2}px`);
+      sec.style.setProperty('--fy', `${cardTop}px`);
+      sec.style.setProperty('--fw', `${cardW}px`);
+      sec.style.setProperty('--fh', `${cardH}px`);
+      caption.style.setProperty('--cy', `${cardTop + cardH + 34}px`);
+    };
+
+    // ---------- позиции ----------
+    // лента: края экрана на 24% ширины ближе к камере
+    const curveK = () => (cw * 0.24) / (cw / 2) ** 2;
+    const infinite = (n: number) => n * step >= cw + 2 * step;
+    const relOf = (k: number, n: number) => {
+      let rel = k - off;
+      if (infinite(n)) rel = ((((rel + n / 2) % n) + n) % n) - n / 2;
+      return rel;
+    };
+    const ribbonRect = (k: number, n: number, sr: DOMRect): Rect => ({
+      x: sr.left + sr.width / 2 + relOf(k, n) * step,
+      y: sr.top + cardTop + cardH / 2,
+      w: cardW,
+      h: cardH,
+    });
+    const gridRect = (it: Item): Rect => {
+      const r = it.media.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
+    };
+    const mixRect = (a: Rect, b: Rect, t: number): Rect => ({
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+      w: a.w + (b.w - a.w) * t,
+      h: a.h + (b.h - a.h) * t,
+    });
+
+    const setActive = (k: number) => {
+      if (k === activeIdx || !items[k]) return;
+      activeIdx = k;
+      const it = items[k];
+      frameEl.href = it.url;
+      frameLabel.textContent = it.title;
+      capTitle.textContent = nbsp(it.title);
+      capTag.textContent = nbsp(it.tag);
+      caption.classList.remove('is-swap');
+      void caption.offsetWidth;
+      caption.classList.add('is-swap');
+    };
+
+    // ---------- кадр ----------
+    const tick = (now: number) => {
+      raf = 0;
+      if (!glOn || !inView || document.hidden) return;
+      raf = requestAnimationFrame(tick);
+
+      const cr = canvas.getBoundingClientRect();
+      if (glWrap.clientWidth !== cw || innerHeight !== ch) measure();
+      const sr = stage.getBoundingClientRect();
+      const n = items.length;
+
+      // переход между режимами
+      const bt = clamp((now - blendT0) / MODE_MS, 0, 1);
+      blend = blendFrom + (blendTo - blendFrom) * ease(bt);
+
+      // лента: доводка к цели и скорость
+      if (!drag) off += (tgt - off) * 0.1;
+      ribbonVel += (Math.abs(off - offPrev) - ribbonVel) * 0.2;
+      offPrev = off;
+      const sy = scrollY;
+      scrollVel += (Math.min(Math.abs(sy - lastScroll), 120) - scrollVel) * 0.15;
+      lastScroll = sy;
+      if (n) setActive(infinite(n) ? ((Math.round(off) % n) + n) % n : clamp(Math.round(off), 0, n - 1));
+
+      // uniforms сцены
+      shared.uCurve.value = curveK() * blend;
+      // в ленте сворачивания нет, в плитке оно полное; во время смены вида — смешивание
+      shared.uRollOn.value = 1 - blend;
+      // рулон начинается ниже стеклянной плашки меню (на ~0,6 её высоты + 40px) и закручивается вверх под неё;
+      // во время смены вида сетка сворачивается ниже
+      const pr = pill?.getBoundingClientRect();
+      const y0View = (pr ? pr.bottom + pr.height * 0.6 + 40 : innerHeight * 0.15) + Math.sin(Math.PI * bt) * innerHeight * 0.35 * (blendTo === 1 ? 1 : 0);
+      shared.uRollR.value = pr ? Math.max(40, pr.height * 0.95) : innerHeight * 0.1;
+      shared.uRollY0.value = ch / 2 - (y0View - cr.top);
+      shared.uEdge.value = 0.35 + 0.65 * blend;
+      shared.uVel.value = Math.min(ribbonVel * 2.2 * blend + (scrollVel / 60) * (1 - blend) * 1.2, 1.4);
+
+      items.forEach((it) => {
+        const mesh = it.mesh!;
+        const k = items.indexOf(it);
+        // цель: место в ленте или в сетке
+        const target: Rect = mode === 'ribbon' ? ribbonRect(k, n, sr) : gridRect(it);
+
+        let rect = target;
+        if (it.from) {
+          const t = clamp((now - it.t0) / it.dur, 0, 1);
+          rect = mixRect(it.from, target, ease(t));
+          if (t >= 1) it.from = null;
+        }
+        it.cur = rect;
+
+        const x = rect.x - cr.left - cw / 2;
+        const y = ch / 2 - (rect.y - cr.top);
+        const w = rect.w, h = rect.h;
+        // отсечение: в ленте — за краями экрана, в сетке — выше и ниже холста
+        const onScreen = blend > 0.5 ? Math.abs(x) < cw / 2 + w * 0.9 : y - h / 2 < ch / 2 + 40 && y + h / 2 > -ch / 2 - 40;
+        mesh.visible = onScreen;
+        it.onScreen = onScreen;
+        if (!onScreen) return;
+
+        mesh.position.set(x, y, 0);
+        mesh.scale.set(w, h, 1);
+        it.uni!.uPlane.value = [w, h];
+        it.hover += (it.hoverTo - it.hover) * 0.12;
+        it.uni!.uHover.value = it.hover * (1 - blend);
+      });
+
+      // ленивая загрузка: обложки на экране и рядом; ролики — только на экране
+      items.forEach((it) => {
+        const near =
+          it.onScreen ||
+          (blend > 0.5 ? Math.abs(relOf(items.indexOf(it), n)) < 3 : Math.abs((it.cur?.y ?? 0) - innerHeight / 2) < innerHeight * 1.5);
+        if (near) loadCover(it);
+        if (!it.videos.length) return;
+        if (it.onScreen && !reduceMq.matches) {
+          it.videos.forEach(startVideo);
+          if (it.kind === 'loop') {
+            const v = it.videos[0];
+            if (v.readyState >= 2 && !v.paused) {
+              if (!it.live) {
+                it.live = true;
+                it.uni!.uImage.value = [v.videoWidth, v.videoHeight];
+                it.tex!.image = v as any;
+                it.loaded = true;
+              }
+              it.tex!.needsUpdate = true;
+            }
+          } else if (it.kind === 'banners' && it.videos.some((v) => v.readyState >= 2 && !v.paused)) {
+            if (!it.canvas2d) composeBanners(it, it.img?.complete ? it.img : null);
+            drawBanners(it);
+            it.live = true;
+            it.tex!.needsUpdate = true;
+          }
+        } else it.videos.forEach(stopVideo);
+      });
+
+      renderer!.render({ scene, camera });
+    };
+    const kick = () => {
+      if (!raf && glOn && inView && !document.hidden) raf = requestAnimationFrame(tick);
+    };
+
+    // при первом появлении лента чуть сдвигается и возвращается — видно, что её можно тянуть
+    let nudged = false;
+    const nudge = () => {
+      if (nudged || mode !== 'ribbon' || drag) return;
+      nudged = true;
+      setTimeout(() => {
+        if (drag || Math.abs(tgt - off) > 0.01) return;
+        tgt = off + 0.35;
+        kick();
+        setTimeout(() => {
+          if (!drag) tgt = Math.round(tgt);
+          kick();
+        }, 650);
+      }, 700);
+    };
+    new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      if (inView && glOn) nudge();
+      if (inView) kick();
+      else if (glOn) items.forEach((it) => it.videos.forEach(stopVideo));
+    }, { rootMargin: '100px' }).observe(sec);
+    document.addEventListener('visibilitychange', kick);
+    addEventListener('resize', () => glOn && measure());
+
+    // ---------- включение / выключение WebGL ----------
+    const applyGl = () => {
+      const want = !reduceMq.matches && wideMq.matches;
+      const next = want && setupGl();
+      if (next === glOn) return;
+      glOn = next;
+      sec.classList.toggle('is-gl', glOn);
+      if (glOn) {
+        items.forEach((it) => it.videos.forEach(stopVideo));
+        measure();
+        items.forEach((it) => (it.from = null));
+        blend = blendFrom = blendTo = mode === 'ribbon' ? 1 : 0;
+        kick();
+      } else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        // фолбэк сам запустит ролики через IntersectionObserver
+        items.forEach((it) => {
+          it.videos.forEach(stopVideo);
+          videoIo.unobserve(it.media);
+          if (it.videos.length) videoIo.observe(it.media);
+        });
+      }
+    };
+    reduceMq.addEventListener('change', applyGl);
+    wideMq.addEventListener('change', applyGl);
+    applyGl();
+
+    // ---------- режимы ----------
+    function setMode(m: 'ribbon' | 'grid', btn: HTMLButtonElement) {
+      if (m === mode) return;
+      press(modeBtns, btn);
+      if (!glOn) {
+        mode = m;
+        sec.dataset.mode = m;
+        return;
+      }
+      const now = performance.now();
+      // плоскости летят от того места, где они сейчас на экране
+      items.forEach((it) => {
+        if (it.cur) {
+          it.from = { ...it.cur };
+          it.t0 = now;
+          it.dur = MODE_MS;
+        }
+      });
+      if (m === 'ribbon') {
+        // активной станет карточка, ближе всех к центру экрана в сетке
+        let best = 0, bestD = Infinity;
+        items.forEach((it, k) => {
+          const d = Math.abs((it.cur?.y ?? 0) - innerHeight / 2) + Math.abs((it.cur?.x ?? 0) - innerWidth / 2) * 0.5;
+          if (d < bestD) (bestD = d), (best = k);
+        });
+        off = tgt = offPrev = best;
+        mode = m;
+        sec.dataset.mode = m;
+        // если сцена ушла за экран — прокрутка без анимации, чтобы лента оказалась в окне
+        const top = stage.getBoundingClientRect().top;
+        if (top < 0 || top > innerHeight * 0.4) scrollTo({ top: scrollY + top - 140, behavior: 'instant' as ScrollBehavior });
+      } else {
+        mode = m;
+        sec.dataset.mode = m;
+      }
+      blendFrom = blend;
+      blendTo = m === 'ribbon' ? 1 : 0;
+      blendT0 = now;
+      kick();
+    }
+
+    // ---------- управление лентой: drag, колесо, стрелки, клик ----------
+    let drag = false, down = false, moved = false;
+    let downX = 0, downOff = 0, lastX = 0, lastT = 0, vX = 0;
+
+    ribbon.addEventListener('dragstart', (e) => e.preventDefault());
+    ribbon.addEventListener('pointerdown', (e) => {
+      if (!glOn || e.button !== 0) return;
+      down = true;
+      moved = false;
+      downX = lastX = e.clientX;
+      downOff = off;
+      lastT = performance.now();
+      vX = 0;
+    });
+    ribbon.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - downX;
+      if (!drag && Math.abs(dx) > 6) {
+        drag = moved = true;
+        ribbon.classList.add('is-drag');
+        ribbon.setPointerCapture(e.pointerId);
+      }
+      if (!drag) return;
+      const t = performance.now();
+      vX = vX * 0.6 + ((e.clientX - lastX) / Math.max(1, t - lastT)) * 0.4;
+      lastX = e.clientX;
+      lastT = t;
+      off = downOff - dx / step;
+      tgt = off;
+      kick();
+    });
+    const release = (e: PointerEvent) => {
+      if (!down) return;
+      down = false;
+      if (drag) {
+        drag = false;
+        ribbon.classList.remove('is-drag');
+        if (ribbon.hasPointerCapture(e.pointerId)) ribbon.releasePointerCapture(e.pointerId);
+        // инерция: бросок продолжает движение, потом доводка к ближайшей карточке
+        tgt = Math.round(off - (vX * 260) / step);
+        const n = items.length;
+        if (!infinite(n)) tgt = clamp(tgt, 0, n - 1);
+      } else if (e.type === 'pointerup' && !(e.target as Element).closest('.work-frame')) {
+        // клик по соседней карточке — она едет в центр
+        const sr = stage.getBoundingClientRect();
+        const cx = sr.left + sr.width / 2;
+        let best = 0, bestD = Infinity;
+        items.forEach((_, k) => {
+          const rel = relOf(k, items.length);
+          const x = rel * step;
+          const z = Math.min(shared.uCurve.value * x * x, shared.uZMax.value);
+          const sx = cx + (x * camZ) / (camZ - z); // проекция центра с учётом перспективы
+          const d = Math.abs(sx - e.clientX);
+          if (d < bestD) (bestD = d), (best = k);
+        });
+        const rel = relOf(best, items.length);
+        if (Math.abs(rel) > 0.5) tgt = Math.round(off + rel);
+      }
+      kick();
+    };
+    ribbon.addEventListener('pointerup', release);
+    ribbon.addEventListener('pointercancel', release);
+    frameEl.addEventListener('click', (e) => {
+      if (moved) {
+        e.preventDefault();
+        moved = false;
+      }
+    });
+
+    let wheelTimer = 0;
+    ribbon.addEventListener(
+      'wheel',
+      (e) => {
+        if (!glOn) return;
+        // горизонтальное колесо и тачпад листают ленту; вертикальное — как обычно, листает страницу
+        const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
+        if (!dx) return;
+        e.preventDefault();
+        tgt += dx / step;
+        const n = items.length;
+        if (!infinite(n)) tgt = clamp(tgt, 0, n - 1);
+        clearTimeout(wheelTimer);
+        wheelTimer = window.setTimeout(() => (tgt = Math.round(tgt)), 140);
+        kick();
+      },
+      { passive: false },
+    );
+
+    ribbon.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      tgt = Math.round(tgt) + (e.key === 'ArrowRight' ? 1 : -1);
+      const n = items.length;
+      if (!infinite(n)) tgt = clamp(tgt, 0, n - 1);
+      kick();
+    });
+  }
+</script>

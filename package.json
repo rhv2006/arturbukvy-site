@@ -13,6 +13,7 @@
   "dependencies": {
     "@fontsource-variable/manrope": "5.3.0",
     "@fontsource-variable/unbounded": "5.3.0",
-    "astro": "7.4.13"
+    "astro": "7.4.13",
+    "ogl": "1.0.11"
   }
 }

@@ -59,6 +59,8 @@ const typography = {
 export default defineConfig({
   site: 'https://xn--80acd5a2aanic6f.xn--p1ai',
   integrations: [typography],
+  // обложки Behance пережимаются при сборке в свои файлы: у CDN Behance нет CORS, а WebGL-галерее #work нужны текстуры с нашего домена
+  image: { domains: ['mir-s3-cdn-cf.behance.net'] },
   // /опросник — то же, что /oprosnik
   redirects: { '/опросник': '/oprosnik/' },
 });
