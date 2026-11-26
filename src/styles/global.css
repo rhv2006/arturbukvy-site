@@ -2276,29 +2276,83 @@ html:has(dialog[open]) .cursor {
   color: var(--muted);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+/* «Инструменты» и «Нейросети»: строки слоёв и эффектов, как в панелях AE, вместо скруглённых плашек */
+.ae-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  column-gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.chips li {
-  padding: 7px 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 14px;
+.ae-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--ae-grid);
+  font-size: 15px;
+  color: var(--text);
   transition:
-    border-color 0.2s,
-    transform 0.2s,
-    background 0.2s;
+    background 0.2s,
+    color 0.2s;
 }
 
-.chips li:hover {
+/* наведение — как выделенный слой: подсветка строки акцентом */
+.ae-list li:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--accent);
+}
+
+.ae-eye {
+  flex: none;
+  width: 16px;
+  height: 10px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.4;
+  transition: stroke 0.2s;
+}
+
+.ae-eye circle {
+  fill: var(--muted);
+  stroke: none;
+  transition: fill 0.2s;
+}
+
+.ae-list li:hover .ae-eye {
+  stroke: var(--accent);
+}
+
+.ae-list li:hover .ae-eye circle {
+  fill: var(--accent);
+}
+
+.ae-list-n {
+  flex: none;
+  min-width: 18px;
+  font: 500 12px/1 var(--display);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.ae-fx {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 18px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font: italic 600 11px/1 var(--body);
+  color: var(--accent);
+  transition: border-color 0.2s;
+}
+
+.ae-list li:hover .ae-fx {
   border-color: var(--accent);
-  transform: translateY(-2px);
 }
 
 @media (max-width: 599px) {
