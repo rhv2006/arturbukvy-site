@@ -10,6 +10,7 @@
 // а без них картинку нельзя загрузить в WebGL-текстуру.
 import { getImage } from 'astro:assets';
 import type { Case } from '../lib/behance';
+import { pageFor } from '../lib/projects';
 import { existsSync } from 'node:fs';
 
 interface Props {
@@ -70,7 +71,8 @@ const items: Item[] = await Promise.all([
   ...[...top, ...rest].map(async (c) => ({
     title: c.title,
     tag: c.tag,
-    url: c.url,
+    // есть страница кейса на сайте — ведём на неё, иначе на Behance
+    url: pageFor(c.id) ?? c.url,
     cover: await localCover(c.cover),
     loop: c.loop,
     videos: c.videos,
@@ -84,6 +86,8 @@ const items: Item[] = await Promise.all([
     icon: w.icon,
   })),
 ]);
+/** Свои страницы открываются в той же вкладке, Behance и прочее — в новой. */
+const ext = (url?: string) => /^https?:/.test(url ?? '');
 const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.cover ? 'img' : 'stub');
 ---
 
@@ -110,7 +114,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
 
     <!-- Лента в WebGL-режиме: подпись и рамка активной карточки; карточки рисует canvas -->
     <div class="work-ribbon" data-cursor="← Тяните →" tabindex="0" role="group" aria-roledescription="карусель" aria-label="Работы: стрелки ← → листают ленту">
-      <a class="work-frame" href={items[0]?.url} target="_blank" rel="noopener" data-cursor="Смотреть" draggable="false">
+      <a class="work-frame" href={items[0]?.url} target={ext(items[0]?.url) ? '_blank' : undefined} rel="noopener" data-cursor="Смотреть" draggable="false">
         <span class="work-corner work-corner-tl" aria-hidden="true"></span>
         <span class="work-corner work-corner-tr" aria-hidden="true"></span>
         <span class="work-corner work-corner-bl" aria-hidden="true"></span>
@@ -128,7 +132,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       {
         items.map((c, i) => (
           <li class="work-item" data-kind={kindOf(c)}>
-            <a class="work-link" href={c.url} target="_blank" rel="noopener" data-cursor="Смотреть" draggable="false">
+            <a class="work-link" href={c.url} target={ext(c.url) ? '_blank' : undefined} rel="noopener" data-cursor="Смотреть" draggable="false">
               <div class="work-media">
                 {c.cover && (
                   <img class="work-img" src={c.cover} alt="" loading={i < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false" />
@@ -818,7 +822,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       gl.clearColor(0, 0, 0, 0);
       camera = new Camera(gl, { fov: 35, near: 1, far: 20000 });
       scene = new Transform();
-      geometry = new Plane(gl, { width: 1, height: 1, widthSegments: 32, heightSegments: 16 });
+      geometry = new Plane(gl, { width: 1, height: 1, widthSegments: 32, heightSegments: 128 }); // по вертикали гуще: сгиб рулона без граней
       shared.uRadius.value = parseFloat(getComputedStyle(sec).getPropertyValue('--radius')) || 14;
 
       const blank = document.createElement('canvas');
@@ -1028,6 +1032,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       activeIdx = k;
       const it = items[k];
       frameEl.href = it.url;
+      frameEl.target = new URL(it.url).origin === location.origin ? '' : '_blank';
       frameLabel.textContent = it.title;
       capTitle.textContent = nbsp(it.title);
       capTag.textContent = nbsp(it.tag);

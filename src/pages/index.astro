@@ -7,6 +7,7 @@ import experience from '../data/experience.json';
 import { xpFrames } from '../data/xp-frames';
 import { getArticles } from '../lib/teletype';
 import WorkGallery from '../components/WorkGallery.astro';
+import Contact from '../components/Contact.astro';
 
 const [{ top, rest }, articles] = await Promise.all([getCases(), getArticles()]);
 
@@ -398,18 +399,7 @@ const dateRu = (iso: string) =>
         )
       }
 
-      <section id="contact" class="section wrap contact">
-        <p class="eyebrow">Ищу работу и проекты · удалённо</p>
-        <h2 class="contact-title">Давайте обсудим<br />вашу задачу</h2>
-        <a class="btn btn-primary btn-lg" href={site.telegram} target="_blank" rel="noopener">
-          Написать в Telegram {site.telegramLabel}
-        </a>
-        <ul class="contact-links">
-          <li><a class="link" href={`mailto:${site.email}`}>{site.email}</a></li>
-          <li><a class="link" href={site.resumePdf} target="_blank" rel="noopener">Резюме PDF ↗</a></li>
-          <li><a class="link" href={site.behance} target="_blank" rel="noopener">Behance ↗</a></li>
-        </ul>
-      </section>
+      <Contact behance={site.behance} />
     </main>
 
     <footer class="wrap footer">

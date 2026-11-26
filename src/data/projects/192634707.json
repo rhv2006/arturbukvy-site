@@ -1,0 +1,46 @@
+{
+  "id": "192634707",
+  "slug": "videokartochki-tovarov-brenda-ultra-balance",
+  "title": "Видеокарточки товаров бренда Ultra Balance",
+  "url": "https://www.behance.net/gallery/192634707/videokartochki-tovarov-brenda-Ultra-Balance",
+  "tags": [
+    "3d render",
+    "visualization",
+    "key visual",
+    "marketing",
+    "Advertising",
+    "кв",
+    "карточка wildberries",
+    "Карточка товара",
+    "карточка товара ozon"
+  ],
+  "published": "2024-02-28",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 32,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/2b6e77192634707.65def51b3eced.jpg",
+      "width": 4000,
+      "height": 2251,
+      "fullBleed": true
+    },
+    {
+      "type": "text",
+      "html": "<div><span style=\"font-size:41px;\" class=\"texteditor-inline-fontsize\"><span class=\"bold\">Задача</span></span></div><div>Бренд UltraBalance выпускает линейку витаминов. К запуску обновлённых упаковок команда хотела:</div><div>Быстро объяснить преимущества каждой формулы на карточках товара.</div><div>Выделиться в поисковой выдаче Ozon / Wildberries за счёт динамичного контента.</div><div>Повысить общую узнаваемость бренда среди аудитории «здорового лайфстайла».</div><div><br></div><div><span class=\"bold\"><span class=\"texteditor-inline-fontsize\" style=\"font-size:41px;\">Что сделали</span></span></div><div>31 короткий ролик (15-25 с) — по одному для каждого SKU</div><div>Под все слоты маркетплейсов и соцсетей.</div><div><br></div><div><span class=\"bold\"><span style=\"font-size:41px;\" class=\"texteditor-inline-fontsize\">Результат</span></span></div><div>Видео сформировали полный контент-пул для 31 SKU — теперь команда маркетинга обновляет карточки без привлечения внешних подрядчиков.</div><div>По данным Ozon Analytics спустя 6 недель:</div><div>время просмотра карточки ↑,</div><div>кликабельность «Добавить в корзину» выросла относительно статики;</div><div>поиск «UltraBalance витамины» стал появляться в блоке «Покупают вместе».</div><div>Бренд отметил рост прямых запросов в соцсетях и положительные упоминания «видел ваш ролик на Ozon».</div>"
+    },
+    {
+      "type": "vimeo",
+      "id": "1078916320",
+      "width": 640,
+      "height": 360,
+      "fullBleed": true
+    }
+  ]
+}

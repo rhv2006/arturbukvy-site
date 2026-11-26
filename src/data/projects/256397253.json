@@ -1,0 +1,39 @@
+{
+  "id": "256397253",
+  "slug": "fake-gameplay-video",
+  "title": "Fake gameplay video",
+  "url": "https://www.behance.net/gallery/256397253/Fake-gameplay-video",
+  "tags": [
+    "Gaming",
+    "fake gameplay",
+    "animation",
+    "3D",
+    "cinema4d",
+    "Unreal Engine 5"
+  ],
+  "published": "2026-09-29",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "vimeo",
+      "id": "1231199902",
+      "width": 1080,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "1231203182",
+      "width": 1080,
+      "height": 810,
+      "fullBleed": true
+    }
+  ]
+}

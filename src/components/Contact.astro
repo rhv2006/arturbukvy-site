@@ -1,0 +1,25 @@
+---
+// Призыв написать: внизу главной и в конце каждой страницы кейса. Стили — в global.css (.contact).
+interface Props {
+  /** ссылка на Behance в списке под кнопкой; в кейсах не нужна */
+  behance?: string;
+}
+const { behance } = Astro.props;
+
+const telegram = 'https://t.me/Arturbukvi';
+const telegramLabel = '@Arturbukvi';
+const email = 'rhv2006@gmail.com';
+const resumePdf = '/fattakhov-resume.pdf';
+---
+
+<section id="contact" class="section wrap contact">
+  <h2 class="contact-title">Давайте обсудим<br />вашу задачу</h2>
+  <a class="btn btn-primary btn-lg" href={telegram} target="_blank" rel="noopener">
+    Написать в Telegram {telegramLabel}
+  </a>
+  <ul class="contact-links">
+    <li><a class="link" href={`mailto:${email}`}>{email}</a></li>
+    <li><a class="link" href={resumePdf} target="_blank" rel="noopener">Резюме PDF ↗</a></li>
+    {behance && <li><a class="link" href={behance} target="_blank" rel="noopener">Behance ↗</a></li>}
+  </ul>
+</section>

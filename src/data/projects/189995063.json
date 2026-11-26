@@ -1,0 +1,40 @@
+{
+  "id": "189995063",
+  "slug": "key-visual-dlja-alfa-banka",
+  "title": "Key visual для Альфа-Банка",
+  "url": "https://www.behance.net/gallery/189995063/Key-visual-dlja-alfa-banka",
+  "tags": [
+    "3d modeling",
+    "cinema 4d",
+    "3D"
+  ],
+  "published": "2024-01-26",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/d33010189995063.65b3b7a2c8a0f.png",
+      "width": 1920,
+      "height": 1920,
+      "fullBleed": true
+    },
+    {
+      "type": "text",
+      "html": "<div style=\"text-align:center;\">Key visual для компании Альфа-Банк перед распродажами «Чёрная пятница» про возможность накопить больше на Альфа-Счёте. </div>"
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/297764189995063.65b3b7a2c7a3a.jpg",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    }
+  ]
+}

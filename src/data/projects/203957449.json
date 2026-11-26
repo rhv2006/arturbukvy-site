@@ -1,0 +1,40 @@
+{
+  "id": "203957449",
+  "slug": "key-visuals-for-app",
+  "title": "Key visuals for app",
+  "url": "https://www.behance.net/gallery/203957449/Key-visuals-for-app",
+  "tags": [
+    "3d modeling",
+    "3D",
+    "key visual",
+    "kv",
+    "marketing",
+    "Graphic Designer",
+    "Advertising"
+  ],
+  "published": "2024-07-24",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "vimeo",
+      "id": "989368630",
+      "width": 1280,
+      "height": 720,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/a4e6ec203957449.66a09cb6722e3.jpg",
+      "width": 3000,
+      "height": 12045,
+      "fullBleed": true
+    }
+  ]
+}

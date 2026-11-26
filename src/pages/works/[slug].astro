@@ -1,0 +1,326 @@
+---
+// Страница кейса: модули проекта Behance в том же порядке, на холсте с фоном и отступами проекта.
+import '@fontsource-variable/unbounded';
+import '@fontsource-variable/manrope';
+import '../../styles/global.css';
+import { getImage } from 'astro:assets';
+import Contact from '../../components/Contact.astro';
+import cases from '../../data/cases.json';
+import { projects, projectPath, vimeoThumb, type Project, type ProjectImage } from '../../lib/projects';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props as { project: Project };
+const meta = (cases.cases as Record<string, { title?: string; tag?: string }>)[project.id] ?? {};
+const title = meta.title ?? project.title;
+const year = project.published.slice(0, 4);
+
+// Исходник с Behance → WebP нескольких ширин на нашем домене. GIF оставляем как есть.
+const WIDTHS = [700, 1400, 2800];
+async function pic(img: ProjectImage) {
+  if (img.gif || !img.height) return { src: img.src, srcset: undefined, width: img.width, height: img.height };
+  try {
+    // основной src тоже не шире 2800: исходники бывают по 10 000 px
+    const w = Math.min(img.width, 2800);
+    const h = Math.round((img.height * w) / img.width);
+    const widths = WIDTHS.filter((x) => x < w).concat(w);
+    const r = await getImage({ src: img.src, width: w, height: h, format: 'webp', quality: 88, widths });
+    return { src: r.src, srcset: r.srcSet.attribute, width: img.width, height: img.height };
+  } catch (err) {
+    console.warn(`[project ${project.id}] ${(err as Error).message} — картинка с Behance как есть`);
+    return { src: img.src, srcset: undefined, width: img.width, height: img.height };
+  }
+}
+
+const modules = await Promise.all(
+  project.modules.map(async (m) => {
+    if (m.type === 'image') return { ...m, pic: await pic(m) };
+    if (m.type === 'grid') return { ...m, pics: await Promise.all(m.images.map(pic)) };
+    if (m.type === 'vimeo') return { ...m, thumb: await vimeoThumb(m.id) };
+    return m;
+  }),
+);
+
+const firstImage = modules.find((m) => m.type === 'image');
+const ogImage = firstImage && 'pic' in firstImage ? new URL(firstImage.pic.src, Astro.site).href : undefined;
+const description = project.description || `${title} — кейс Артура Фаттахова, ${meta.tag ?? '3D и motion'}.`;
+const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px, 100vw`;
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0b0b0d" />
+    <title>{`${title} — артурбуквы`}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={new URL(projectPath(project), Astro.site)} />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {modules.some((m) => m.type === 'vimeo') && <link rel="preconnect" href="https://player.vimeo.com" />}
+    <!-- Yandex.Metrika counter -->
+    <script is:inline type="text/javascript">
+      (function(m,e,t,r,i,k,a){
+          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=114661416', 'ym');
+
+      ym(114661416, 'init', {ssr:true, webvisor:true, clickmap:true, referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <!-- /Yandex.Metrika counter -->
+  </head>
+  <body>
+    <main class="case">
+      <header class="case-head">
+        <a class="case-back" href="/#work">← Все работы</a>
+        <h1 class="case-title">{title}</h1>
+        <p class="case-meta">{meta.tag && <span>{meta.tag}</span>}<span>{year}</span></p>
+        {project.description && <p class="case-desc">{project.description}</p>}
+      </header>
+
+      <div
+        class="case-canvas"
+        style={[
+          `--canvas-w: ${project.canvas.width}px`,
+          `--canvas-bg: ${project.canvas.background ?? 'transparent'}`,
+          `--canvas-gap: ${project.canvas.gap ?? 0}px`,
+          `--canvas-pad: ${project.canvas.paddingTop ?? 0}px`,
+          `--canvas-text: ${project.canvas.textColor ?? '#696969'}`,
+          `--canvas-link: ${project.canvas.linkColor ?? '#1769FF'}`,
+        ].join('; ')}>
+        {
+          modules.map((m, i) => {
+            const eager = i === 0;
+            switch (m.type) {
+              case 'image':
+                return (
+                  <figure class:list={['case-module', { 'is-full': m.fullBleed }]}>
+                    <img
+                      src={m.pic.src}
+                      srcset={m.pic.srcset}
+                      sizes={sizes}
+                      width={m.pic.width}
+                      height={m.pic.height}
+                      alt=""
+                      loading={eager ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                    {m.caption && <figcaption>{m.caption}</figcaption>}
+                  </figure>
+                );
+              case 'grid':
+                return (
+                  <figure class="case-module case-grid">
+                    {m.pics.map((p) => (
+                      <img src={p.src} srcset={p.srcset} sizes="50vw" width={p.width} height={p.height} alt="" loading="lazy" decoding="async" />
+                    ))}
+                    {m.caption && <figcaption>{m.caption}</figcaption>}
+                  </figure>
+                );
+              case 'vimeo':
+                return (
+                  <div
+                    class:list={['case-module', 'case-video', { 'is-full': m.fullBleed }]}
+                    style={`aspect-ratio: ${m.width} / ${m.height}`}
+                    data-vimeo={m.id}>
+                    {m.thumb && <img src={m.thumb} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" />}
+                  </div>
+                );
+              case 'embed':
+                return (
+                  <div class:list={['case-module', 'case-embed', { 'is-full': m.fullBleed }]} style={`aspect-ratio: ${m.width} / ${m.height}`} set:html={m.html} />
+                );
+              case 'text':
+                return <div class="case-module case-text" set:html={m.html} />;
+            }
+          })
+        }
+      </div>
+
+      <Contact />
+    </main>
+
+    <footer class="wrap footer">
+      <span>© {new Date().getFullYear()} Артур Фаттахов</span>
+      <a href="/">артурбуквы.рф</a>
+    </footer>
+
+    <script>
+      // Vimeo: плеер вставляется, когда видео подходит к экрану, и играет сам, без звука, по кругу —
+      // как на Behance. Панель управления остаётся, чтобы можно было включить звук.
+      const params = 'autoplay=1&muted=1&loop=1&autopause=0&playsinline=1&badge=0&byline=0&title=0&portrait=0&dnt=1';
+      const mount = (box: HTMLElement) => {
+        const frame = document.createElement('iframe');
+        frame.src = `https://player.vimeo.com/video/${box.dataset.vimeo}?${params}`;
+        frame.allow = 'autoplay; fullscreen; picture-in-picture';
+        frame.title = 'Видео';
+        frame.addEventListener('load', () => box.classList.add('is-ready'), { once: true });
+        box.append(frame);
+      };
+      const boxes = document.querySelectorAll<HTMLElement>('[data-vimeo]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              io.unobserve(e.target);
+              mount(e.target as HTMLElement);
+            }
+          },
+          { rootMargin: '300px 0px' },
+        );
+        boxes.forEach((b) => io.observe(b));
+      } else {
+        boxes.forEach(mount);
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  .case {
+    padding: 32px 0 64px;
+  }
+
+  .case-head,
+
+  .case-back {
+    display: inline-block;
+    font-family: var(--display);
+    font-size: 15px;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  .case-back:hover {
+    color: var(--accent);
+  }
+
+  .case-title {
+    margin: 40px 0 12px;
+    font-size: clamp(36px, 7vw, 72px);
+  }
+
+  .case-meta {
+    display: flex;
+    gap: 16px;
+    margin: 0 0 40px;
+    color: var(--muted);
+  }
+
+  .case-desc {
+    max-width: 760px;
+    margin: -16px 0 40px;
+    color: var(--muted);
+    white-space: pre-line;
+  }
+
+  .case-canvas {
+    display: flex;
+    flex-direction: column;
+    gap: var(--canvas-gap);
+    padding-top: var(--canvas-pad);
+    width: min(var(--canvas-w), 100%);
+    margin-inline: auto;
+    background: var(--canvas-bg);
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .case-canvas {
+      border-radius: var(--radius);
+    }
+  }
+
+  .case-module {
+    margin: 0;
+  }
+
+  /* модули не «на всю ширину» на Behance стоят с полями */
+  .case-module:not(.is-full, .case-text) {
+    width: calc(100% - 2 * clamp(16px, 6.5%, 90px));
+    margin-inline: auto;
+  }
+
+  .case-module img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .case-module figcaption {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-style: italic;
+    color: #a4a4a4;
+  }
+
+  .case-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .case-grid figcaption {
+    grid-column: 1 / -1;
+  }
+
+  .case-video,
+  .case-embed {
+    position: relative;
+    background: #000;
+  }
+
+  .case-video img,
+  .case-video :global(iframe),
+  .case-embed :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .case-video img {
+    object-fit: cover;
+    transition: opacity 0.4s;
+  }
+
+  .case-video:global(.is-ready) img {
+    opacity: 0;
+  }
+
+  /* текст как на Behance: шрифт, цвет и размер из стилей проекта, инлайн-стили блока поверх */
+  .case-text {
+    padding: 0 clamp(16px, 6.5%, 90px);
+    color: var(--canvas-text);
+    font-family: helvetica, arial, sans-serif;
+    font-size: 20px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .case-text :global(.bold) {
+    font-weight: 700;
+  }
+
+  .case-text :global(a) {
+    color: var(--canvas-link);
+  }
+
+  @media (max-width: 767px) {
+    .case-text :global([style*='font-size']) {
+      font-size: min(1em, 7vw) !important;
+    }
+  }
+
+
+</style>

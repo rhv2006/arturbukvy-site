@@ -1,0 +1,51 @@
+{
+  "id": "222397241",
+  "slug": "kv-dlja-idei-bezopasnogo-gida-s-kasperskim",
+  "title": "KV для идеи безопасного гида с Касперским",
+  "url": "https://www.behance.net/gallery/222397241/KV-dlja-idei-bezopasnogo-gida-s-kasperskim",
+  "tags": [
+    "Advertising",
+    "Kaspersky",
+    "Promotion"
+  ],
+  "published": "2025-03-27",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 80,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "text",
+      "html": "<div style=\"text-align:center;\"><span style=\"font-size:25px;\" class=\"texteditor-inline-fontsize\">KV для идеи безопасного гида с Касперским</span></div>"
+    },
+    {
+      "type": "text",
+      "html": "<div style=\"font-size:19px;text-align:center;\"><span class=\"texteditor-inline-fontsize\" style=\"font-size:19px;\">Специальный проект, посвященный теме безопасности, актуален в любых обстоятельствах и в любом месте. Этот проект создан с помощью искусственного интеллекта.</span></div>"
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/23b5d6222397241.67e50e55a7371.jpg",
+      "width": 9875,
+      "height": 4641,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/beb8c5222397241.67e50e55a6e2a.jpg",
+      "width": 9875,
+      "height": 4641,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/d9e20e222397241.67e50e55a65f9.jpg",
+      "width": 9875,
+      "height": 4641,
+      "fullBleed": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "254266703",
+  "slug": "bannery-dlja-otpbanka",
+  "title": "Баннеры для Отпбанка",
+  "url": "https://www.behance.net/gallery/254266703/bannery-dlja-otpbanka",
+  "tags": [
+    "motion graphics",
+    "after effects",
+    "html5 banner ads",
+    "Advertising"
+  ],
+  "published": "2026-08-14",
+  "canvas": {
+    "width": 1400,
+    "background": "#000000",
+    "paddingTop": 0,
+    "gap": 19,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "vimeo",
+      "id": "1218217822",
+      "width": 400,
+      "height": 133,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "1218218204",
+      "width": 400,
+      "height": 134,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "1218218393",
+      "width": 400,
+      "height": 130,
+      "fullBleed": true
+    }
+  ]
+}

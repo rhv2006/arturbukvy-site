@@ -1,0 +1,49 @@
+{
+  "id": "200672141",
+  "slug": "key-visual-dlja-servisa-mts-kodify",
+  "title": "Key Visual для сервиса MTS Kodify",
+  "url": "https://www.behance.net/gallery/200672141/Key-Visual-dlja-servisa-MTS-Kodify",
+  "tags": [
+    "3D",
+    "Render",
+    "cinema 4d",
+    "MTS",
+    "Advertising"
+  ],
+  "published": "2024-06-10",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/52934d200672141.6666dc49605a7.png",
+      "width": 2681,
+      "height": 2681,
+      "fullBleed": true
+    },
+    {
+      "type": "text",
+      "html": "<div style=\"text-align:left;\"><span class=\"texteditor-inline-color\" style=\"color:#8c8c8c;\"><span class=\"texteditor-inline-fontsize\" style=\"font-size:19px;\">Key Visual для сервиса Kodify. Он может быть полезен во многих областях, где требуется написание программного кода. Я решил изобразить помощника в виде робота, который имеет пару иконок, обозначающих области, в которых он может помочь.</span></span></div>"
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/c72e26200672141.6666ddf1e068e.png",
+      "width": 3458,
+      "height": 1914,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/b570f4200672141.6666ddf1e10a4.png",
+      "width": 2681,
+      "height": 3426,
+      "fullBleed": true
+    }
+  ]
+}

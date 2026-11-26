@@ -1,0 +1,12 @@
+{
+  "id": "229395949",
+  "slug": "3d-video-dlja-t2",
+  "title": "3D видео для t2",
+  "url": "https://www.behance.net/gallery/229395949/3D-video-dlja-t2",
+  "tags": ["design", "3d animation", "motion design", "after effects", "cinema 4d"],
+  "published": "2025-07-01",
+  "canvas": { "width": 1400, "background": "#FFFFFF", "gap": 0 },
+  "modules": [
+    { "type": "vimeo", "id": "1218208289", "width": 1920, "height": 1080, "fullBleed": true }
+  ]
+}

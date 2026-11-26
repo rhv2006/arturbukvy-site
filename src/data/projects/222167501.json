@@ -1,0 +1,58 @@
+{
+  "id": "222167501",
+  "slug": "3d-logo-dlja-fudsiti",
+  "title": "3D logo для «Фудсити»",
+  "url": "https://www.behance.net/gallery/222167501/3D-logo-dlja-fudsiti",
+  "tags": [
+    "3dlogo",
+    "3d modeling",
+    "3D Logo Design"
+  ],
+  "published": "2025-03-24",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 80,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "text",
+      "html": "<div style=\"text-align:center;\"><span class=\"texteditor-inline-fontsize\" style=\"font-size:30px;\">ЗD логотип для компании <a target=\"_blank\" href=\"https://foodcity.ru/\" rel=\"nofollow\">«Фудсити»</a></span><br></div>"
+    },
+    {
+      "type": "text",
+      "html": "<div style=\"text-align:center;\">Цель заключалась в том, чтобы сделать логотип более живым и привлекательным для использования в анимации в будущем.</div>"
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/189430222167501.67e17235f3440.png",
+      "width": 2560,
+      "height": 2560,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/c8d41d222167501.67e17235f4150.png",
+      "width": 2560,
+      "height": 2560,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/e1fd86222167501.67e17235f2c86.png",
+      "width": 2560,
+      "height": 2560,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/f86792222167501.67e17235f3ac1.png",
+      "width": 2000,
+      "height": 469,
+      "fullBleed": true
+    }
+  ]
+}
