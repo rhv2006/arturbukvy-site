@@ -11,18 +11,18 @@
   "canvas": {
     "width": 1280,
     "background": "#000000",
-    "paddingTop": 80,
+    "paddingTop": 0,
     "gap": 60,
     "textColor": "#696969",
     "linkColor": "#1769FF"
   },
   "modules": [
     {
-      "type": "image",
-      "src": "https://mir-s3-cdn-cf.behance.net/projects/original/153d4f189704623.Y3JvcCwyMTUyLDE2ODMsMCwyMzk.png",
-      "width": 2152,
-      "height": 2160,
-      "fullBleed": false
+      "type": "loop",
+      "src": "/projects/189704623/amir.mp4",
+      "width": 1280,
+      "height": 1280,
+      "fullBleed": true
     }
   ]
 }
