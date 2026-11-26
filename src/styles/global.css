@@ -1895,9 +1895,25 @@ html:has(dialog[open]) .cursor {
 .photo-3d {
   position: absolute;
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+/* затемнение под курсором: ровный круг, поверх фото и под каркасом; позицию и размер задаёт скрипт */
+.photo-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: var(--lo, 0);
+  background: radial-gradient(
+    circle var(--lr, 0px) at var(--lx, 50%) var(--ly, 50%),
+    rgb(8 10 6 / 0.78) 55%,
+    rgb(8 10 6 / 0) 100%
+  );
 }
 
 .photo {
@@ -1907,6 +1923,9 @@ html:has(dialog[open]) .cursor {
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: var(--radius);
+  /* обрезаем снизу полоску, куда не доходит 3D-модель (каркас при наведении), — кадр совпадает с камерой */
+  transform: scale(1.0179);
+  transform-origin: 50% 0;
 }
 
 /* заголовок над фото и текстом: на десктопе у левого края, как «Опыт», на телефоне над фото */
@@ -1929,9 +1948,9 @@ html:has(dialog[open]) .cursor {
 .facts {
   display: grid;
   gap: 24px;
-  margin: 40px 0;
-  padding-block: 32px;
-  border-block: 1px solid var(--line);
+  margin: 40px 0 8px;
+  padding-block: 32px 0;
+  border-top: 1px solid var(--line);
 }
 
 @media (min-width: 600px) {
@@ -1941,8 +1960,28 @@ html:has(dialog[open]) .cursor {
 }
 
 .facts dt {
+  position: relative;
   font: 600 clamp(28px, 3vw, 38px)/1 var(--display);
   color: var(--accent);
+  transition: color 0.5s ease;
+}
+
+/* цифра собирается из точек: пока идёт сборка, текст прозрачный, видны только точки на канвасе */
+.facts dt.is-dots {
+  color: transparent;
+}
+
+.fact-dots {
+  position: absolute;
+  inset: -48px;
+  width: calc(100% + 96px);
+  height: calc(100% + 96px);
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.facts dt:not(.is-dots) .fact-dots {
+  opacity: 0;
 }
 
 .facts dd {
