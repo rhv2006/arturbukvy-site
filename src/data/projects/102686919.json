@@ -1,0 +1,72 @@
+{
+  "id": "102686919",
+  "slug": "smm-dlja-smartykids",
+  "title": "Smm для SmartyKids",
+  "url": "https://www.behance.net/gallery/102686919/Smm-dlja-SmartyKids",
+  "description": "SmartyKids - это центры детского развития по ментальной арифметике. Компания помогает детям от 4 лет развить мышление, креативность, научиться совершать в уме сложные операции счета.",
+  "tags": [
+    "animation",
+    "instagram",
+    "SMM"
+  ],
+  "published": "2020-08-22",
+  "canvas": {
+    "width": 1400,
+    "background": "#ffffff",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "loop",
+      "src": "/projects/102686919/03017e102686919.5f3d3a2080dca.mp4",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "450059481",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/53b420102686919.5f3fd1765a968.jpg",
+      "width": 1920,
+      "height": 2918,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "450474717",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/40934d102686919.5f41212282b5d.jpg",
+      "width": 1920,
+      "height": 1579,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "450599488",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/7c56fb102686919.5f4136631cfb8.jpg",
+      "width": 1920,
+      "height": 272,
+      "fullBleed": true
+    }
+  ]
+}

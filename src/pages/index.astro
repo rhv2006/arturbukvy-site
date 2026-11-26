@@ -10,7 +10,7 @@ import WorkGallery from '../components/WorkGallery.astro';
 import Contact from '../components/Contact.astro';
 import Cursor from '../components/Cursor.astro';
 
-const [{ top, rest }, articles] = await Promise.all([getCases(), getArticles()]);
+const [{ top, rest, tail }, articles] = await Promise.all([getCases(), getArticles()]);
 
 const site = {
   name: 'Артур Фаттахов',
@@ -194,7 +194,7 @@ const dateRu = (iso: string) =>
         </div>
       </section>
 
-      <WorkGallery top={top} rest={rest} behance={site.behance} />
+      <WorkGallery top={top} rest={rest} tail={tail} behance={site.behance} />
 
       <section id="about" class="section wrap about">
         <div class="photo-wrap">

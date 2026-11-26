@@ -1,0 +1,28 @@
+{
+  "id": "189704623",
+  "slug": "animirovannyj-avatar-dlja-kanala",
+  "title": "Анимированный аватар для канала",
+  "url": "https://www.behance.net/gallery/189704623/animirovannyj-avatar-dlja-kanala",
+  "tags": [
+    "motion design",
+    "3D"
+  ],
+  "published": "2024-01-23",
+  "canvas": {
+    "width": 1280,
+    "background": "#000000",
+    "paddingTop": 80,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/projects/original/153d4f189704623.Y3JvcCwyMTUyLDE2ODMsMCwyMzk.png",
+      "width": 2152,
+      "height": 2160,
+      "fullBleed": false
+    }
+  ]
+}

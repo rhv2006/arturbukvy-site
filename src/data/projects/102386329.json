@@ -1,0 +1,66 @@
+{
+  "id": "102386329",
+  "slug": "smm-dlja-delilabs",
+  "title": "Smm для DeliLabs",
+  "url": "https://www.behance.net/gallery/102386329/Smm-dlja-DeliLabs",
+  "description": "DeliLabs - это технология будущего, которую мы привезли в Россию из Кореи, чтобы сделать Вашу жизнь лучше. Полностью готовое блюдо. Open! Eat! Go! Только разогрет! Не нужно заваривать и готовить. ",
+  "tags": [
+    "Food",
+    "Fun",
+    "motion",
+    "SMM"
+  ],
+  "published": "2020-08-13",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "loop",
+      "src": "/projects/102386329/5ec6d5102386329.5f353a51980d8.mp4",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/43572d102386329.5f353cea48287.jpg",
+      "width": 1920,
+      "height": 2532,
+      "fullBleed": true
+    },
+    {
+      "type": "loop",
+      "src": "/projects/102386329/1c6796102386329.5f353a51997af.mp4",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/a26c54102386329.5f353a519877e.jpg",
+      "width": 1920,
+      "height": 3552,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "447149738",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/6fc240102386329.5f353a5197b74.jpg",
+      "width": 1920,
+      "height": 3525,
+      "fullBleed": true
+    }
+  ]
+}

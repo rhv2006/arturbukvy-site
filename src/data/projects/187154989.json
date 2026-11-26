@@ -1,0 +1,80 @@
+{
+  "id": "187154989",
+  "slug": "forgotten-forest-cinematic",
+  "title": "Forgotten forest cinematic",
+  "url": "https://www.behance.net/gallery/187154989/Forgotten-forest-cinematic",
+  "tags": [
+    "motion design",
+    "Unreal Engine 5",
+    "cinematic",
+    "3d animation",
+    "lihting design"
+  ],
+  "published": "2023-12-20",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "youtube",
+      "id": "awTchpmFMrA",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/2a50d7187154989.6582a0289b170.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/b13105187154989.6582a0cfa3a64.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/4f4ef3187154989.6582a0cfa1cba.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/40f7d3187154989.6582a0cfa01ca.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/394d99187154989.6582a0cfa2d32.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/f193bf187154989.6582a0cfa0f48.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/fd7bc3187154989.6582a0cf9f3c4.jpeg",
+      "width": 3840,
+      "height": 2161,
+      "fullBleed": true
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "93487253",
+  "slug": "smm-dlja-samocat-sharing",
+  "title": "SMM для Samocat Sharing",
+  "url": "https://www.behance.net/gallery/93487253/SMM-dlja-Samocat-Sharing",
+  "tags": [],
+  "published": "2020-03-12",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "loop",
+      "src": "/projects/93487253/8fc27393487253.5e668b7572d0c.mp4",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/60d92993487253.5e6a3c973c4ba.jpg",
+      "width": 1920,
+      "height": 13473,
+      "fullBleed": true
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "183674415",
+  "slug": "i-feel-by-chanel",
+  "title": "i feel by chanel",
+  "url": "https://www.behance.net/gallery/183674415/i-feel-by-chanel",
+  "description": "a fictional project for chanel perfume. Feel with chanel...",
+  "tags": [
+    "parfume",
+    "motion graphics",
+    "3d animation",
+    "after effects",
+    "motion design",
+    "3D",
+    "Advertising",
+    "chanel perfume"
+  ],
+  "published": "2023-11-02",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 60,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "youtube",
+      "id": "IEK3azQnhAg",
+      "width": 560,
+      "height": 315,
+      "fullBleed": true
+    }
+  ]
+}

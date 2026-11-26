@@ -56,7 +56,7 @@ jobs:
       - name: Upload media
         run: >-
           $S3 sync dist "s3://$BUCKET" --size-only --delete --cache-control "public, max-age=300"
-          --exclude "*" --include "video/*" --include "xp/*" --include "covers/*"
+          --exclude "*" --include "video/*" --include "xp/*" --include "covers/*" --include "projects/*"
           --include "*.pdf" --include "*.jpg" --include "*.png" --include "*.webp"
 
       # Остальное (страницы, sitemap, иконки) — каждый раз, короткий кеш, чтобы правки появлялись быстро.
@@ -64,7 +64,7 @@ jobs:
       - name: Upload site
         run: >-
           $S3 sync dist "s3://$BUCKET" --cache-control "public, max-age=300" --delete
-          --exclude "_astro/*" --exclude "video/*" --exclude "xp/*" --exclude "covers/*"
+          --exclude "_astro/*" --exclude "video/*" --exclude "xp/*" --exclude "covers/*" --exclude "projects/*"
           --exclude "*.pdf" --exclude "*.jpg" --exclude "*.png" --exclude "*.webp"
 
       - name: Remove stale hashed assets

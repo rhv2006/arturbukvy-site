@@ -16,9 +16,11 @@ import { existsSync } from 'node:fs';
 interface Props {
   top: Case[];
   rest: Case[];
+  /** кейсы после заглушек «AI video» и «Mobile games» */
+  tail?: Case[];
   behance: string;
 }
-const { top, rest, behance } = Astro.props;
+const { top, rest, tail = [], behance } = Astro.props;
 
 // Работы не с Behance: идут последними. Если файла обложки в public/ ещё нет, карточка рисуется заглушкой с названием.
 const extraWorks = [
@@ -67,16 +69,18 @@ type Item = {
   icon?: string;
 };
 
+const fromCase = async (c: Case): Promise<Item> => ({
+  title: c.title,
+  tag: c.tag,
+  // есть страница кейса на сайте — ведём на неё, иначе на Behance
+  url: pageFor(c.id) ?? c.url,
+  cover: await localCover(c.cover),
+  loop: c.loop,
+  videos: c.videos,
+});
+
 const items: Item[] = await Promise.all([
-  ...[...top, ...rest].map(async (c) => ({
-    title: c.title,
-    tag: c.tag,
-    // есть страница кейса на сайте — ведём на неё, иначе на Behance
-    url: pageFor(c.id) ?? c.url,
-    cover: await localCover(c.cover),
-    loop: c.loop,
-    videos: c.videos,
-  })),
+  ...[...top, ...rest].map(fromCase),
   ...extraWorks.map(async (w) => ({
     title: w.title,
     tag: w.tag,
@@ -85,6 +89,7 @@ const items: Item[] = await Promise.all([
     stub: w.stub,
     icon: w.icon,
   })),
+  ...tail.map(fromCase),
 ]);
 /** Свои страницы открываются в той же вкладке, Behance и прочее — в новой. */
 const ext = (url?: string) => /^https?:/.test(url ?? '');

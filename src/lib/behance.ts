@@ -10,6 +10,8 @@ export interface Case {
   cover: string;
   date: string;
   top?: number;
+  /** место в хвосте галереи — после заглушек «AI video» и «Mobile games» */
+  tail?: number;
   videos?: string[];
   loop?: string;
 }
@@ -20,6 +22,7 @@ interface Override {
   title?: string;
   tag?: string;
   top?: number;
+  tail?: number;
   hidden?: boolean;
   videos?: string[];
   loop?: string;
@@ -75,7 +78,7 @@ function fromCache(): Case[] {
     .map(([id, o]) => ({ id, url: o.url!, cover: o.cover!, date: o.date ?? '', title: o.title ?? '' }));
 }
 
-let cached: Promise<{ top: Case[]; rest: Case[] }> | undefined;
+let cached: Promise<{ top: Case[]; rest: Case[]; tail: Case[] }> | undefined;
 
 export function getCases() {
   cached ??= (async () => {
@@ -86,17 +89,21 @@ export function getCases() {
       console.warn(`[behance] ${(err as Error).message} — беру кейсы из cases.json`);
       base = fromCache();
     }
+    // кейсы из хвоста старые и в короткую RSS-ленту могут не попасть — берём их из cases.json
+    const seen = new Set(base.map((c) => c.id));
+    base.push(...fromCache().filter((c) => overrides[c.id]?.tail && !seen.has(c.id)));
 
     const all = base
       .filter((c) => !overrides[c.id]?.hidden)
       .map((c) => {
         const o = overrides[c.id] ?? {};
-        return { ...c, title: o.title ?? c.title, tag: o.tag, top: o.top, videos: o.videos, loop: o.loop, cover: o.image ?? hiRes(c.cover) };
+        return { ...c, title: o.title ?? c.title, tag: o.tag, top: o.top, tail: o.tail, videos: o.videos, loop: o.loop, cover: o.image ?? hiRes(c.cover) };
       });
 
     const top = all.filter((c) => c.top).sort((a, b) => a.top! - b.top!);
-    const rest = all.filter((c) => !c.top).sort((a, b) => b.date.localeCompare(a.date));
-    return { top, rest };
+    const rest = all.filter((c) => !c.top && !c.tail).sort((a, b) => b.date.localeCompare(a.date));
+    const tail = all.filter((c) => c.tail).sort((a, b) => a.tail! - b.tail!);
+    return { top, rest, tail };
   })();
   return cached;
 }

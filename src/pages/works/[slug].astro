@@ -40,6 +40,7 @@ const modules = await Promise.all(
     if (m.type === 'image') return { ...m, pic: await pic(m) };
     if (m.type === 'grid') return { ...m, pics: await Promise.all(m.images.map(pic)) };
     if (m.type === 'vimeo') return { ...m, thumb: await vimeoThumb(m.id) };
+    if (m.type === 'youtube') return { ...m, thumb: `https://i.ytimg.com/vi/${m.id}/hqdefault.jpg` };
     return m;
   }),
 );
@@ -66,6 +67,7 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     <meta property="og:description" content={description} />
     {ogImage && <meta property="og:image" content={ogImage} />}
     {modules.some((m) => m.type === 'vimeo') && <link rel="preconnect" href="https://player.vimeo.com" />}
+    {modules.some((m) => m.type === 'youtube') && <link rel="preconnect" href="https://www.youtube-nocookie.com" />}
     <!-- Yandex.Metrika counter -->
     <script is:inline type="text/javascript">
       (function(m,e,t,r,i,k,a){
@@ -128,17 +130,39 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
                   </figure>
                 );
               case 'vimeo':
+              case 'youtube':
                 return (
                   <div
                     class:list={['case-module', 'case-video', { 'is-full': m.fullBleed }]}
                     style={`aspect-ratio: ${m.width} / ${m.height}`}
-                    data-vimeo={m.id}>
+                    data-video={m.type}
+                    data-id={m.id}>
                     {m.thumb && <img src={m.thumb} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" />}
+                  </div>
+                );
+              case 'loop':
+                return (
+                  <div class:list={['case-module', { 'is-full': m.fullBleed }]}>
+                    <video
+                      class="case-loop"
+                      data-src={m.src}
+                      width={m.width}
+                      height={m.height}
+                      muted
+                      loop
+                      playsinline
+                      preload="none"
+                      aria-hidden="true"
+                    />
                   </div>
                 );
               case 'embed':
                 return (
-                  <div class:list={['case-module', 'case-embed', { 'is-full': m.fullBleed }]} style={`aspect-ratio: ${m.width} / ${m.height}`} set:html={m.html} />
+                  <div
+                    class:list={['case-module', 'case-embed', { 'is-full': m.fullBleed }]}
+                    style={`max-width: ${m.width}px; aspect-ratio: ${m.width} / ${m.height}`}>
+                    <iframe src={m.src} title="Видео" loading="lazy" allow="autoplay; fullscreen" allowfullscreen />
+                  </div>
                 );
               case 'text':
                 return <div class="case-module case-text" set:html={m.html} />;
@@ -177,20 +201,27 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
         if (inSide(e) && !String(getSelection() ?? '')) location.href = '/#work';
       });
 
-      // Vimeo: плеер вставляется, когда видео подходит к экрану, и играет сам, без звука, по кругу —
-      // как на Behance. Поверх видео прозрачный слой: над ним остаётся наш курсор, клик включает
-      // и выключает звук. Нижняя полоса с панелью Vimeo открыта — там системный курсор и кнопки плеера.
-      const params = 'autoplay=1&muted=1&loop=1&autopause=0&playsinline=1&badge=0&byline=0&title=0&portrait=0&dnt=1';
+      // Vimeo и YouTube: плеер вставляется, когда видео подходит к экрану, и играет сам, без звука,
+      // по кругу — как на Behance. Поверх видео прозрачный слой: над ним остаётся наш курсор, клик
+      // включает и выключает звук. Нижняя полоса с панелью плеера открыта — там системный курсор и кнопки.
       const VIMEO = 'https://player.vimeo.com';
+      const YOUTUBE = 'https://www.youtube-nocookie.com';
       const SOUND_ON = 'Включить звук', SOUND_OFF = 'Выключить звук';
       const send = (frame: HTMLIFrameElement, method: string, value?: unknown) =>
         frame.contentWindow?.postMessage(JSON.stringify(value === undefined ? { method } : { method, value }), VIMEO);
+      const yt = (frame: HTMLIFrameElement, func: string) =>
+        frame.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args: [] }), YOUTUBE);
       const cursorEl = document.querySelector<HTMLElement>('.cursor');
+      const srcFor = (kind: string, id: string) =>
+        kind === 'youtube'
+          ? `${YOUTUBE}/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
+          : `${VIMEO}/video/${id}?autoplay=1&muted=1&loop=1&autopause=0&playsinline=1&badge=0&byline=0&title=0&portrait=0&dnt=1`;
 
       const mount = (box: HTMLElement) => {
+        const kind = box.dataset.video!;
         const frame = document.createElement('iframe');
-        frame.src = `${VIMEO}/video/${box.dataset.vimeo}?${params}`;
-        frame.allow = 'autoplay; fullscreen; picture-in-picture';
+        frame.src = srcFor(kind, box.dataset.id!);
+        frame.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
         frame.title = 'Видео';
         frame.addEventListener('load', () => box.classList.add('is-ready'), { once: true });
 
@@ -209,9 +240,14 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
           if (label && cursorEl!.classList.contains('is-label') && hit.matches(':hover')) label.textContent = text;
         };
         hit.addEventListener('click', () => {
-          send(frame, 'setMuted', !muted);
-          if (muted) send(frame, 'setVolume', 1); // включаем звук — громкость на максимум
-          send(frame, 'play');
+          if (kind === 'youtube') {
+            yt(frame, muted ? 'unMute' : 'mute');
+            yt(frame, 'playVideo');
+          } else {
+            send(frame, 'setMuted', !muted);
+            if (muted) send(frame, 'setVolume', 1); // включаем звук — громкость на максимум
+            send(frame, 'play');
+          }
           setMuted(!muted);
         });
         // ушли с слоя вниз, на панель Vimeo: там свой курсор, наш прячем
@@ -234,7 +270,7 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
         });
         box.append(frame, hit);
       };
-      const boxes = document.querySelectorAll<HTMLElement>('[data-vimeo]');
+      const boxes = document.querySelectorAll<HTMLElement>('[data-video]');
       if ('IntersectionObserver' in window) {
         const io = new IntersectionObserver(
           (entries) => {
@@ -250,6 +286,20 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
       } else {
         boxes.forEach(mount);
       }
+
+      // Бывшие GIF: mp4 грузится, когда подходит к экрану, и играет только на экране.
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const loopIo = new IntersectionObserver(
+        (entries) =>
+          entries.forEach(({ target, isIntersecting }) => {
+            const v = target as HTMLVideoElement;
+            if (!v.src) v.src = v.dataset.src!;
+            if (isIntersecting && !reduce) v.play().catch(() => {});
+            else v.pause();
+          }),
+        { rootMargin: '300px 0px' },
+      );
+      document.querySelectorAll<HTMLVideoElement>('video.case-loop').forEach((v) => loopIo.observe(v));
     </script>
   </body>
 </html>
@@ -327,10 +377,16 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     margin-inline: auto;
   }
 
-  .case-module img {
+  .case-module img,
+  .case-loop {
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  .case-embed {
+    width: 100%;
+    margin-inline: auto;
   }
 
   .case-module figcaption {

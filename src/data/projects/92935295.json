@@ -1,0 +1,60 @@
+{
+  "id": "92935295",
+  "slug": "promo-sajt-delilabs",
+  "title": "Промо-сайт DeliLabs",
+  "url": "https://www.behance.net/gallery/92935295/promo-sajt-DeliLabs",
+  "description": "Промо-сайт для пищевой компании",
+  "tags": [
+    "Food",
+    "healthyfood",
+    "Hike",
+    "Interface",
+    "trip"
+  ],
+  "published": "2020-02-27",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "loop",
+      "src": "/projects/92935295/c06be792935295.5e57e3cf89459.mp4",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/c8bc6592935295.5e57e3cf884e3.jpg",
+      "width": 1920,
+      "height": 2999,
+      "fullBleed": true
+    },
+    {
+      "type": "loop",
+      "src": "/projects/92935295/3bd2a792935295.5e57e3cf87e7d.mp4",
+      "width": 1920,
+      "height": 1081,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/4d6c9d92935295.5e57e7876a359.jpg",
+      "width": 1920,
+      "height": 4192,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/b6d44492935295.5e58dcd0e331f.jpg",
+      "width": 1920,
+      "height": 640,
+      "fullBleed": true
+    }
+  ]
+}

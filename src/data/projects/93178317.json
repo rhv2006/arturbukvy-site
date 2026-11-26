@@ -1,0 +1,64 @@
+{
+  "id": "93178317",
+  "slug": "promo-sajt-samocat-sharing",
+  "title": "Промо-сайт Samocat Sharing",
+  "url": "https://www.behance.net/gallery/93178317/promo-sajt-Samocat-Sharing",
+  "description": "«Сеть автоматического проката самокатов 24/7\n\nСистема проката полностью автоматизирована и работает без участия человека. Всё, что тебе нужно – скачать приложение #SamocatSharing и найти ближайшую станцию для аренды самоката.\n\n⚡️ От 2 рублей за минуту\n⚡️ Удобное мобильное приложение\n⚡️ «Умные» станции проката\n\nСамокат – это круто! До дома, до работы, по городу с друзьями – выбери свой маршрут и катайся с ветерком! Комбинируй его с общественным транспортом или автомобилем и ощути новый уровень мобильности.»\n",
+  "tags": [
+    "promo",
+    "sharing"
+  ],
+  "published": "2020-03-04",
+  "canvas": {
+    "width": 1400,
+    "background": "#FFFFFF",
+    "paddingTop": 0,
+    "gap": 0,
+    "textColor": "#696969",
+    "linkColor": "#1769FF"
+  },
+  "modules": [
+    {
+      "type": "loop",
+      "src": "/projects/93178317/8f6a9b93178317.5e5e58a71facb.mp4",
+      "width": 1920,
+      "height": 1229,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/264d0b93178317.5e5fac11ac053.jpg",
+      "width": 1920,
+      "height": 2065,
+      "fullBleed": true
+    },
+    {
+      "type": "vimeo",
+      "id": "395441059",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "type": "loop",
+      "src": "/projects/93178317/833df793178317.5e5fe7bbb5973.mp4",
+      "width": 1920,
+      "height": 900,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/cfd89c93178317.5e5fe7bbb6326.jpg",
+      "width": 1920,
+      "height": 2101,
+      "fullBleed": true
+    },
+    {
+      "type": "image",
+      "src": "https://mir-s3-cdn-cf.behance.net/project_modules/source/e1e9f693178317.5e5ff20620d58.jpg",
+      "width": 1920,
+      "height": 2491,
+      "fullBleed": true
+    }
+  ]
+}

@@ -12,7 +12,11 @@ export type ProjectModule =
   | ({ type: 'image'; fullBleed?: boolean; caption?: string } & ProjectImage)
   | { type: 'grid'; images: ProjectImage[]; caption?: string }
   | { type: 'vimeo'; id: string; width: number; height: number; fullBleed?: boolean }
-  | { type: 'embed'; html: string; width: number; height: number; fullBleed?: boolean }
+  | { type: 'youtube'; id: string; width: number; height: number; fullBleed?: boolean }
+  /** GIF с Behance, переведённый в mp4 (public/projects/<id>/) */
+  | { type: 'loop'; src: string; width: number; height: number; fullBleed?: boolean }
+  /** прочие плееры (видео, загруженное прямо в Behance) — iframe как есть */
+  | { type: 'embed'; src: string; width: number; height: number; fullBleed?: boolean }
   | { type: 'text'; html: string };
 
 export interface Project {
