@@ -28,17 +28,17 @@ const site = {
   resumePdfEn: '/fattakhov-resume-en.pdf',
 };
 
-const description =
-  'Артур Фаттахов — дизайнер 3D, motion и key visual. 14 лет опыта, кейсы для Альфа-Банка, МТС, t2, ОТП Банка и Касперского.';
-
 const facts = [
   { value: '14 лет', label: 'в дизайне: от препресса до CGI-роликов' },
   { value: '17 000+', label: 'экранов t2 по России крутят мои 20+ роликов' },
   { value: '30+', label: '3D key visual для промо приложения Альфа-Банка' },
 ];
-
-const tools = ['Cinema 4D', 'Redshift', 'Octane', 'Blender', 'Unreal Engine 5', 'TouchDesigner', 'Adobe After Effects', 'Adobe Photoshop', 'Adobe Illustrator', 'Adobe InDesign', 'Figma'];
+const tools = ['Cinema 4D', 'Redshift', 'Octane', 'Blender', 'Unreal Engine 5', 'TouchDesigner', 'After Effects', 'Photoshop', 'Illustrator', 'InDesign', 'Figma'];
 const ai = ['Veo 3.1', 'Kling 3.0', 'Sora 2 Pro', 'Seedance', 'Flux 2 Pro', 'Nano Banana Pro', 'Midjourney', 'Recraft', 'Reve', 'ComfyUI', 'Freepik', 'Google Flow', 'Higgsfield'];
+
+const description =
+  'Артур Фаттахов — дизайнер 3D, motion и key visual. 14 лет опыта, кейсы для Альфа-Банка, МТС, t2, ОТП Банка и Касперского.';
+
 
 // Опыт: данные в src/data/experience.json, самое свежее сверху.
 // Таймлайн на десктопе рисуется из тех же данных: годы → позиции клипов и кейфреймов на дорожках.
@@ -198,48 +198,44 @@ const dateRu = (iso: string) =>
 
       <WorkGallery top={top} rest={rest} tail={tail} />
 
-      <section id="about" class="section wrap about">
-        <h2>Обо мне</h2>
-        <!-- «Обо мне» как проект After Effects: фото — выделенный слой в окне композиции, справа — его панель свойств -->
-        <figure class="ae-layer">
-          <figcaption class="ae-layer-name" aria-hidden="true"><span class="ae-layer-n">1</span>artur.aep</figcaption>
-          <div class="ae-frame">
-            <div class="photo-wrap">
-              <!-- квадрат фото: на десктопе слой тянется по высоте панели, квадрат обрезается по бокам, сетка остаётся на лице -->
-              <div class="photo-sq">
-                <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
-                <canvas class="photo-3d" aria-hidden="true"></canvas>
-              </div>
+      <!-- «Обо мне»: на весь экран — каркас 3D-модели головы (держится, пока идёт текст), поверх него едет текст блоками -->
+      <section id="about" class="section about">
+        <div class="about-stage">
+          <div class="photo-wrap" data-cursor="Крутить">
+            <div class="photo-sq">
+              <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
+              <canvas class="photo-3d" aria-hidden="true"></canvas>
             </div>
-            <span class="ae-sel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><b class="ae-anchor"></b></span>
           </div>
-        </figure>
-
-        <div class="ae-panel">
-          <div class="ae-head" aria-hidden="true">
+          <div class="wrap about-hud" aria-hidden="true">
             <span>Effect Controls · <b>artur.aep</b></span>
             <span class="ae-tc" data-ae-tc>0:00:00:00</span>
           </div>
+        </div>
 
-          <div class="ae-group ae-source">
-            <p class="ae-prop" aria-hidden="true"><i class="ae-watch"></i>Source Text</p>
+        <div class="wrap about-copy">
+          <div class="about-block about-intro">
+            <h2>Обо мне</h2>
             <p class="about-lead">
-              Я Артур, дизайнер с 14-летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
-            </p>
-            <p>
-              Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса, в Cinema 4D, Redshift, Blender и
-              Unreal Engine 5. Делаю 3D-ролики для мобильных игр, в том числе рекламные fake gameplay. Веду CGI-ролики под ключ: идея, сценарий, сториборд, 3D-продакшен, композитинг. Адаптирую KV и
-              motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
-            </p>
-            <p>
-              Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.{' '}
-              <a class="link" href="#articles">Статьи об автоматизации ↓</a>
+              Я Артур, дизайнер с 14‑летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
             </p>
           </div>
 
-          <details class="ae-group" open>
-            <summary><span class="ae-twirl" aria-hidden="true"></span>Профиль</summary>
-            <dl class="facts">
+          <div class="about-block">
+            <p class="about-label">Что делаю</p>
+            <p>
+              Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса. Делаю 3D-ролики для мобильных
+              игр, в том числе рекламные fake gameplay.
+            </p>
+            <p>
+              Веду CGI-ролики под ключ: идея, сценарий, сториборд, 3D-продакшен, композитинг. Адаптирую KV и motion под 15+
+              форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
+            </p>
+          </div>
+
+          <div class="about-block">
+            <p class="about-label">В цифрах</p>
+            <dl class="about-nums">
               {
                 facts.map((f) => (
                   <div>
@@ -249,38 +245,21 @@ const dateRu = (iso: string) =>
                 ))
               }
             </dl>
-          </details>
+          </div>
 
-          <details class="ae-group" open>
-            <summary><span class="ae-twirl" aria-hidden="true"></span>Инструменты<span class="ae-count">{tools.length}</span></summary>
-            {/* список слоёв, как в панели Timeline: глаз видимости, номер слоя, имя */}
-            <ol class="ae-list">
-              {
-                tools.map((t, i) => (
-                  <li>
-                    <svg class="ae-eye" viewBox="0 0 16 10" aria-hidden="true"><path d="M1 5s2.6-4 7-4 7 4 7 4-2.6 4-7 4-7-4-7-4Z" /><circle cx="8" cy="5" r="1.8" /></svg>
-                    <span class="ae-list-n">{i + 1}</span>
-                    {t}
-                  </li>
-                ))
-              }
-            </ol>
-          </details>
+          <div class="about-block">
+            <p class="about-label">Инструменты</p>
+            <ul class="about-tags">{tools.map((t) => <li>{t}</li>)}</ul>
+          </div>
 
-          <details class="ae-group" open>
-            <summary><span class="ae-twirl" aria-hidden="true"></span>Effects · нейросети<span class="ae-count">{ai.length}</span></summary>
-            {/* список эффектов, как в Effect Controls: значок fx и имя */}
-            <ul class="ae-list ae-list-fx">
-              {
-                ai.map((t) => (
-                  <li>
-                    <span class="ae-fx" aria-hidden="true">fx</span>
-                    {t}
-                  </li>
-                ))
-              }
-            </ul>
-          </details>
+          <div class="about-block">
+            <p class="about-label">Нейросети и автоматизация</p>
+            <ul class="about-tags">{ai.map((t) => <li>{t}</li>)}</ul>
+            <p>
+              Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.{' '}
+              <a class="link" href="#articles">Статьи об автоматизации ↓</a>
+            </p>
+          </div>
         </div>
       </section>
 
@@ -1236,17 +1215,15 @@ const dateRu = (iso: string) =>
       }
     </script>
     <script>
-      // Фото «Обо мне»: под курсором фото темнеет ровным кругом (CSS) и проступает лаймовый 3D-каркас лица —
-      // рёбра модели, сделанной по этому фото. Модель лежит точно поверх снимка, само фото не двигается.
-      // Только для мыши и без reduced motion.
+      // «Обо мне»: вместо фото — каркас 3D-модели головы, серые рёбра без заливки, как wireframe в Blender.
+      // Модель можно крутить перетаскиванием (с инерцией), под курсором мыши рёбра загораются лаймом.
+      // Рисуется везде, где есть WebGL (фото остаётся запасным вариантом).
       import { Renderer, Camera, Transform, Program, Geometry, Mesh } from 'ogl';
 
       const wrap = document.querySelector<HTMLElement>('.photo-wrap');
       const canvas = wrap?.querySelector<HTMLCanvasElement>('.photo-3d');
-      const meshOk =
-        matchMedia('(hover: hover) and (pointer: fine)').matches &&
-        !matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (wrap && canvas && meshOk) initWire(wrap, canvas).catch(() => {});
+      const hoverOk = matchMedia('(hover: hover) and (pointer: fine)').matches;
+      if (wrap && canvas) initWire(wrap, canvas).catch(() => {});
 
       async function initWire(wrap: HTMLElement, canvas: HTMLCanvasElement) {
         let renderer: Renderer;
@@ -1262,12 +1239,14 @@ const dateRu = (iso: string) =>
 
         // кадр фото в координатах модели (найден подгонкой рендера модели к artur.jpg). Низ кадра — по срезу бюста:
         // фото увеличено на 1.79% от верхнего края (.photo), полоска снизу, куда модель не доходит, обрезана
-        const camera = new Camera(gl, { left: -0.43585, right: 0.39905, bottom: 0.002, top: 0.8369, near: 0.1, far: 10 });
+        // кадр по высоте — от среза бюста до макушки с запасом; по ширине подстраивается под холст (см. ResizeObserver)
+        const BOTTOM = -0.01, TOP = 0.95, CX = -0.0384;
+        const camera = new Camera(gl, { left: CX - 0.43, right: CX + 0.43, bottom: BOTTOM, top: TOP, near: 0.1, far: 10 });
         camera.position.set(0, 0, 3);
         const scene = new Transform();
 
-        // bust_wire.bin: uint32 вершин, рёбер, треугольников; float32 позиции и нормали; uint16 рёбра и треугольники
-        const bin = await (await fetch('/models/bust_wire.bin')).arrayBuffer();
+        // bust_wire360.bin (из model.glb, упрощён в Blender до 24k треугольников): uint32 вершин, рёбер, треугольников; float32 позиции и нормали; uint16 рёбра и треугольники
+        const bin = await (await fetch('/models/bust_wire360.bin')).arrayBuffer();
         const [nv, ne, nt] = new Uint32Array(bin, 0, 3);
         const o = 12, pos = new Float32Array(bin, o, nv * 3), nrm = new Float32Array(bin, o + nv * 12, nv * 3);
         const eo = o + nv * 24, to = eo + ne * 4;
@@ -1292,9 +1271,12 @@ const dateRu = (iso: string) =>
           attribute vec3 normal;
           uniform mat4 modelViewMatrix;
           uniform mat4 projectionMatrix;
+          uniform mat3 normalMatrix;
           varying float vY;
+          varying vec3 vN;
           void main() {
             vY = position.y;
+            vN = normalize(normalMatrix * normal);
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * ${lift}, 1.0);
           }`;
 
@@ -1315,7 +1297,7 @@ const dateRu = (iso: string) =>
           }),
         });
         shell.renderOrder = -1;
-        // 3) рёбра модели — как wireframe в Blender, лаймом
+        // 3) рёбра модели — как wireframe в Blender: серые, под курсором лаймовые
         const wire = new Mesh(gl, {
           geometry: new Geometry(gl, {
             position: { size: 3, data: pos },
@@ -1331,8 +1313,7 @@ const dateRu = (iso: string) =>
               varying float vY;
               void main() {
                 float a = lensAt(gl_FragCoord.xy);
-                if (a < 0.01) discard;
-                gl_FragColor = vec4(0.83, 1.0, 0.23, a);
+                gl_FragColor = vec4(mix(vec3(0.62, 0.62, 0.65), vec3(0.83, 1.0, 0.23), a), mix(0.42, 1.0, a));
               }`,
             uniforms,
             transparent: true,
@@ -1340,18 +1321,41 @@ const dateRu = (iso: string) =>
           }),
         });
         wire.renderOrder = 1;
-        for (const m of [shell, wire]) m.setParent(scene);
+        let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+        for (let i = 0; i < nv; i++) {
+          const x = pos[i * 3], z = pos[i * 3 + 2];
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (z < minZ) minZ = z;
+          if (z > maxZ) maxZ = z;
+        }
+        const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+        const pivot = new Transform();
+        pivot.position.set(cx, 0, cz);
+        pivot.setParent(scene);
+        for (const m of [shell, wire]) {
+          m.position.set(-cx, 0, -cz);
+          m.setParent(pivot);
+        }
 
         // lens — раскрытие 0..1, lx/ly — курсор в пикселях канваса (низ = 0), всё с плавной доводкой
         let lens = 0, lensTo = 0, lx = 0, ly = 0, lxTo = 0, lyTo = 0, raf = 0;
+        // поворот вокруг вертикали: rotY — угол, velY — скорость после броска
+        let rotY = 0, velY = 0, dragging = false, lastX = 0, lastT = 0;
         const frame = () => {
           raf = 0;
+          if (!dragging) {
+            rotY += velY;
+            velY *= 0.94;
+            if (Math.abs(velY) < 0.0002) velY = 0;
+          }
+          pivot.rotation.y = rotY;
           lens += (lensTo - lens) * 0.12;
           lx += (lxTo - lx) * 0.2;
           ly += (lyTo - ly) * 0.2;
           uniforms.uLens.value = lens;
           uniforms.uMouse.value = [lx, ly];
-          uniforms.uLensR.value = gl.canvas.height * 0.34 * (0.35 + 0.65 * lens);
+          uniforms.uLensR.value = gl.canvas.height * 0.2 * (0.35 + 0.65 * lens);
           // затемнение фото — CSS-градиент под канвасом (.photo-sq::after), ровный круг того же размера
           const dpr = renderer.dpr;
           box.style.setProperty('--lx', `${lx / dpr}px`);
@@ -1359,7 +1363,8 @@ const dateRu = (iso: string) =>
           box.style.setProperty('--lr', `${uniforms.uLensR.value / dpr}px`);
           box.style.setProperty('--lo', lens.toFixed(3));
           renderer.render({ scene, camera });
-          if (Math.abs(lensTo - lens) > 0.003 || (lens > 0.003 && Math.abs(lxTo - lx) + Math.abs(lyTo - ly) > 0.5))
+          wrap.classList.add('is-model');
+          if (velY || Math.abs(lensTo - lens) > 0.003 || (lens > 0.003 && Math.abs(lxTo - lx) + Math.abs(lyTo - ly) > 0.5))
             raf = requestAnimationFrame(frame);
         };
         const kick = () => (raf ||= requestAnimationFrame(frame));
@@ -1368,128 +1373,58 @@ const dateRu = (iso: string) =>
           lxTo = (e.clientX - r.left) * dpr;
           lyTo = (r.bottom - e.clientY) * dpr;
         };
-        wrap.addEventListener('pointerenter', (e) => {
+        if (hoverOk) wrap.addEventListener('pointerenter', (e) => {
           at(e);
           lx = lxTo;
           ly = lyTo;
           lensTo = 1;
           kick();
         });
-        wrap.addEventListener('pointermove', (e) => {
+        if (hoverOk) wrap.addEventListener('pointermove', (e) => {
           at(e);
           kick();
         });
-        wrap.addEventListener('pointerleave', () => {
+        if (hoverOk) wrap.addEventListener('pointerleave', () => {
           lensTo = 0;
           kick();
         });
+        wrap.addEventListener('pointerdown', (e) => {
+          if (e.button !== 0) return;
+          dragging = true;
+          velY = 0;
+          lastX = e.clientX;
+          lastT = e.timeStamp;
+          wrap.setPointerCapture(e.pointerId);
+          wrap.classList.add('is-drag');
+        });
+        wrap.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          const dx = e.clientX - lastX, dt = Math.max(1, e.timeStamp - lastT);
+          const k = (Math.PI * 1.6) / box.clientWidth; // ширина кадра ≈ 290°
+          rotY += dx * k;
+          velY = ((dx * k) / dt) * 16;
+          lastX = e.clientX;
+          lastT = e.timeStamp;
+          kick();
+        });
+        const release = (e: PointerEvent) => {
+          if (!dragging) return;
+          dragging = false;
+          if (e.timeStamp - lastT > 80) velY = 0; // остановили палец перед отпусканием — без броска
+          wrap.classList.remove('is-drag');
+          kick();
+        };
+        wrap.addEventListener('pointerup', release);
+        wrap.addEventListener('pointercancel', release);
         new ResizeObserver(() => {
           renderer.setSize(box.clientWidth, box.clientHeight);
+          const half = ((TOP - BOTTOM) * (box.clientWidth / Math.max(1, box.clientHeight))) / 2;
+          camera.orthographic({ left: CX - half, right: CX + half, bottom: BOTTOM, top: TOP, near: 0.1, far: 10 });
           kick();
         }).observe(box);
       }
     </script>
     <script>
-      // «Обо мне», цифры (14 лет, 17 000+, 30+): собираются из лаймовых точек, как точки фона сайта.
-      // Точки слетаются в форму цифры, потом плавно сменяются обычным текстом. Наведение — собрать заново.
-      // Текст всегда в разметке (поиск, экранные дикторы); при reduced motion эффекта нет.
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const PAD = 48; // запас канваса вокруг цифры: оттуда прилетают точки
-        const STEP = 3.2, R = 1.15; // шаг сетки точек и радиус точки, css px
-        type Dot = { x: number; y: number; sx: number; sy: number; d: number };
-
-        const setup = (dt: HTMLElement) => {
-          const canvas = document.createElement('canvas');
-          canvas.className = 'fact-dots';
-          canvas.setAttribute('aria-hidden', 'true');
-          dt.append(canvas);
-          const ctx = canvas.getContext('2d')!;
-          let dots: Dot[] = [], w = 0, h = 0, dpr = 1, raf = 0, t0 = 0;
-
-          // точки — пиксели цифры, отрисованной тем же шрифтом, что и текст
-          const sample = () => {
-            const cs = getComputedStyle(dt);
-            dpr = Math.min(devicePixelRatio || 1, 2);
-            const bw = dt.clientWidth, bh = dt.clientHeight;
-            w = bw + PAD * 2;
-            h = bh + PAD * 2;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            const text = dt.firstChild?.textContent?.trim() ?? '';
-            const off = document.createElement('canvas');
-            off.width = w;
-            off.height = h;
-            const g = off.getContext('2d', { willReadFrequently: true })!;
-            g.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-            if ('letterSpacing' in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = cs.letterSpacing;
-            const m = g.measureText(text);
-            const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize);
-            const base = (lh - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
-            g.fillText(text, PAD, PAD + base);
-            const px = g.getImageData(0, 0, w, h).data;
-            dots = [];
-            for (let y = 0; y < h; y += STEP)
-              for (let x = 0; x < w; x += STEP) {
-                if (px[((Math.round(y) * w + Math.round(x)) << 2) + 3] < 140) continue;
-                const a = Math.random() * Math.PI * 2, r = 20 + Math.random() * 60;
-                dots.push({ x, y, sx: x + Math.cos(a) * r * 1.6, sy: y + Math.sin(a) * r, d: Math.random() * 0.35 });
-              }
-          };
-
-          const DUR = 1500;
-          const frame = (now: number) => {
-            const p = (now - t0) / DUR;
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = '#d4ff3a';
-            for (const o of dots) {
-              const k = Math.min(1, Math.max(0, (p - o.d) / (1 - 0.35)));
-              const e = 1 - (1 - k) ** 3;
-              ctx.globalAlpha = Math.min(1, k * 3);
-              ctx.beginPath();
-              ctx.arc(o.sx + (o.x - o.sx) * e, o.sy + (o.y - o.sy) * e, R, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            if (p < 1) raf = requestAnimationFrame(frame);
-            else {
-              raf = 0;
-              dt.classList.remove('is-dots'); // точки собрались — проявляется настоящий текст, точки гаснут
-            }
-          };
-          const play = () => {
-            if (raf) return;
-            sample();
-            dt.classList.add('is-dots');
-            t0 = performance.now();
-            raf = requestAnimationFrame(frame);
-          };
-          return play;
-        };
-
-        const facts = [...document.querySelectorAll<HTMLElement>('.facts > div')];
-        const players = new Map<Element, () => void>();
-        document.fonts.ready.then(() => {
-          facts.forEach((div) => {
-            const dt = div.querySelector<HTMLElement>('dt');
-            if (!dt) return;
-            dt.classList.add('is-dots');
-            const play = setup(dt);
-            players.set(div, play);
-            div.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && play());
-          });
-          const io = new IntersectionObserver(
-            (entries) =>
-              entries.forEach((e) => {
-                if (!e.isIntersecting) return;
-                io.unobserve(e.target);
-                setTimeout(players.get(e.target)!, facts.indexOf(e.target as HTMLElement) * 180 + 250);
-              }),
-            { threshold: 0.6 },
-          );
-          facts.forEach((div) => io.observe(div));
-        });
-      }
-
       // таймкод в шапке «Effect Controls» бежит вместе со страницей: верх — 0:00:00:00, низ — минута при 25 кадрах
       {
         const tc = document.querySelector<HTMLElement>('[data-ae-tc]');

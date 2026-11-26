@@ -1877,158 +1877,32 @@ html:has(dialog[open]) .cursor {
 
 /* ---------- about ---------- */
 
-/* ---------- «Обо мне» как проект After Effects ----------
-   Слева — фото как выделенный слой в окне композиции (рамка, маркеры, опорная точка),
-   справа — его панель свойств: сверху текст (Source Text), ниже раскрывающиеся группы. */
+/* ---------- «Обо мне» ----------
+   Сцена на весь экран: каркас 3D-модели головы прилипает к экрану (sticky), пока поверх него
+   прокручивается текст блоками. Текст лежит прямо на фоне в точку, модель можно крутить мышью или пальцем. */
 
 .about {
-  --ae-grid: #1d1d21;
-  display: grid;
-  gap: 40px;
-  /* холсты сборки цифр из точек шире самих цифр — на телефоне не даём им расширять страницу вбок
-     (clip, а не hidden: не создаёт контейнер прокрутки и не ломает sticky у фото) */
+  position: relative;
+  /* холст модели шире текста — не даём ему расширять страницу вбок (clip не ломает sticky) */
   overflow-x: clip;
 }
 
-@media (min-width: 900px) {
-  .about {
-    grid-template-columns: minmax(280px, 34%) 1fr;
-    gap: 40px 64px;
-    align-items: start;
-  }
-  /* слой по высоте равен панели: фото тянется на всю её высоту, квадрат кадра обрезается по бокам */
-  .about {
-    align-items: stretch;
-  }
-  .ae-layer {
-    display: flex;
-    flex-direction: column;
-  }
-  .ae-frame {
-    flex: 1;
-  }
-  .ae-frame .photo-wrap {
-    height: 100%;
-  }
-  .photo-sq {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    height: 100%;
-    aspect-ratio: 1;
-    translate: -50% 0;
-  }
+.about-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
 }
 
-/* заголовок над фото и панелью: на десктопе у левого края, как «Опыт», на телефоне над фото */
-.about > h2 {
-  grid-column: 1 / -1;
-  margin: 0;
-}
-
-/* слой в окне композиции */
-.ae-layer {
-  margin: 0;
-  padding: 0 8px 8px;
-}
-
-.ae-layer-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 18px -8px;
-  font: 500 13px/1 var(--body);
-  color: var(--muted);
-}
-
-.ae-layer-n {
-  display: grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font: 600 12px/1 var(--display);
-}
-
-.ae-frame {
-  position: relative;
-}
-
-/* рамка выделения с восемью маркерами и опорной точкой, как у выделенного слоя */
-.ae-sel {
+.about-stage .photo-wrap {
   position: absolute;
-  inset: -6px;
-  z-index: 3;
-  border: 1px solid var(--accent);
-  pointer-events: none;
-}
-
-.ae-sel i {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  background: var(--bg);
-  border: 1.5px solid var(--accent);
-  translate: -50% -50%;
-}
-
-.ae-sel i:nth-child(1) { left: 0; top: 0; }
-.ae-sel i:nth-child(2) { left: 50%; top: 0; }
-.ae-sel i:nth-child(3) { left: 100%; top: 0; }
-.ae-sel i:nth-child(4) { left: 100%; top: 50%; }
-.ae-sel i:nth-child(5) { left: 100%; top: 100%; }
-.ae-sel i:nth-child(6) { left: 50%; top: 100%; }
-.ae-sel i:nth-child(7) { left: 0; top: 100%; }
-.ae-sel i:nth-child(8) { left: 0; top: 50%; }
-
-.ae-anchor {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 16px;
-  height: 16px;
-  translate: -50% -50%;
-  border: 1.5px solid var(--accent);
-  border-radius: 50%;
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-.ae-anchor::before,
-.ae-anchor::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  background: var(--accent);
-  translate: -50% -50%;
-}
-
-.ae-anchor::before {
-  width: 26px;
-  height: 1.5px;
-}
-
-.ae-anchor::after {
-  width: 1.5px;
-  height: 26px;
-}
-
-/* при наведении на фото опорная точка уходит, чтобы не мешать 3D-сетке */
-.ae-frame:hover .ae-anchor {
-  opacity: 0;
-}
-
-.photo-wrap {
-  position: relative;
-  border-radius: 4px;
+  inset: 0;
   overflow: hidden;
 }
 
 .photo-sq {
-  position: relative;
+  position: absolute;
+  inset: 0;
 }
 
 .photo-3d {
@@ -2040,57 +1914,42 @@ html:has(dialog[open]) .cursor {
   pointer-events: none;
 }
 
-/* затемнение под курсором: ровный круг, поверх фото и под каркасом; позицию и размер задаёт скрипт */
-.photo-sq::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: var(--lo, 0);
-  background: radial-gradient(
-    circle var(--lr, 0px) at var(--lx, 50%) var(--ly, 50%),
-    rgb(8 10 6 / 0.78) 55%,
-    rgb(8 10 6 / 0) 100%
-  );
-}
-
 .photo {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 1;
-  object-fit: cover;
-  /* обрезаем снизу полоску, куда не доходит 3D-модель (каркас при наведении), — кадр совпадает с камерой */
-  transform: scale(1.0179);
-  transform-origin: 50% 0;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
 }
 
-
-/* панель свойств */
-.ae-panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+/* модель отрисовалась — фото не показываем, вместо него каркас; его можно крутить */
+.photo-wrap.is-model .photo {
+  visibility: hidden;
+}
+.photo-wrap.is-model {
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.photo-wrap.is-model.is-drag {
+  cursor: grabbing;
 }
 
-.ae-head {
+/* строка как в панели AE: имя слоя и бегущий таймкод, внизу экрана */
+.about-hud {
+  position: absolute;
+  inset: auto 0 24px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 40px;
-  padding: 0 24px;
-  border-bottom: 1px solid var(--line);
-  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
-  background: var(--bg);
   font: 400 12px/1 var(--body);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
+  pointer-events: none;
 }
 
-.ae-head b {
+.about-hud b {
   font-weight: 600;
   color: var(--text);
 }
@@ -2102,265 +1961,126 @@ html:has(dialog[open]) .cursor {
   color: var(--accent);
 }
 
-.ae-group {
-  padding: 22px 24px;
-  border-bottom: 1px solid var(--line);
-}
-
-.ae-group:last-child {
-  border-bottom: 0;
-}
-
-/* названия свойств и групп — мелкие, капсом, как в панели AE */
-.about .ae-prop,
-.ae-group > summary {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 16px;
-  font: 400 12px/1 var(--body);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* секундомер свойства: включён — значит, у свойства есть ключи */
-.ae-watch {
+/* текст едет поверх модели: клики и перетаскивание проходят сквозь него к модели, кроме ссылок */
+.about-copy {
   position: relative;
-  flex: none;
-  width: 13px;
-  height: 13px;
-  border: 1.5px solid var(--accent);
-  border-radius: 50%;
+  z-index: 1;
+  margin-top: -100vh;
+  margin-top: -100svh;
+  padding-bottom: 12vh;
+  pointer-events: none;
 }
 
-.ae-watch::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 1.5px;
-  width: 1.5px;
-  height: 4px;
-  background: var(--accent);
-  translate: -50% 0;
+.about-copy a {
+  pointer-events: auto;
 }
 
-.ae-group > summary {
-  margin: 0;
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  transition: color 0.2s;
+.about-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 80vh;
+  min-height: 80svh;
+  max-width: 640px;
+  /* тёмный ореол вокруг букв: текст читается поверх рёбер модели */
+  text-shadow:
+    0 0 24px var(--bg),
+    0 0 8px var(--bg),
+    0 0 2px var(--bg);
 }
 
-.ae-group > summary::-webkit-details-marker {
-  display: none;
+.about-intro {
+  min-height: 100vh;
+  min-height: 100svh;
 }
 
-.ae-group > summary:hover {
-  color: var(--text);
-}
-
-.ae-group[open] > summary {
-  margin-bottom: 18px;
-}
-
-/* треугольник-«твирл»: повёрнут вниз у раскрытой группы */
-.ae-twirl {
-  flex: none;
-  width: 0;
-  height: 0;
-  border-block: 5px solid transparent;
-  border-left: 7px solid currentColor;
-  transition: rotate 0.2s ease;
-}
-
-.ae-group[open] .ae-twirl {
-  rotate: 90deg;
-  color: var(--accent);
-}
-
-.ae-count {
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
+.about h2 {
+  margin: 0 0 24px;
 }
 
 .about p {
-  max-width: 640px;
-  color: var(--muted);
-}
-
-.about .about-lead {
-  margin-top: 0;
-  font-size: clamp(19px, 2vw, 23px);
-  line-height: 1.45;
+  margin: 0 0 18px;
+  font-size: clamp(17px, 1.15vw, 21px);
+  line-height: 1.55;
   color: var(--text);
 }
 
-.ae-source > p:last-child {
+.about p:last-child {
   margin-bottom: 0;
 }
 
-/* «Профиль»: свойства со значениями и ромбиками ключевых кадров */
-.facts {
-  margin: 0;
+.about .about-lead {
+  font: 500 clamp(26px, 3vw, 46px) / 1.2 var(--body);
 }
 
-.facts > div {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
+/* подпись блока — как имя свойства в AE: мелко, капсом, с ромбиком ключа */
+.about .about-label {
+  display: flex;
   align-items: center;
-  gap: 8px 24px;
-  padding: 16px 0 16px 24px;
-  border-top: 1px solid var(--ae-grid);
+  gap: 12px;
+  margin-bottom: 22px;
+  font: 500 12px/1 var(--body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
-.facts > div:first-child {
-  border-top: 0;
-  padding-top: 4px;
-}
-
-.facts > div::before {
+.about-label::before {
   content: '';
-  position: absolute;
-  left: 1px;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  margin-top: -4.5px;
+  width: 8px;
+  height: 8px;
   background: var(--accent);
   rotate: 45deg;
 }
 
-.facts > div:first-child::before {
-  margin-top: -2.5px;
+.about-nums {
+  margin: 0;
 }
 
-.facts dt {
-  position: relative;
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  font: 600 clamp(26px, 2.8vw, 36px)/1 var(--display);
+.about-nums > div {
+  display: grid;
+  gap: 10px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+}
+
+.about-nums > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.about-nums dt {
+  font: 600 clamp(40px, 5vw, 80px) / 1 var(--display);
   color: var(--accent);
   white-space: nowrap;
-  transition: color 0.5s ease;
 }
 
-/* цифра собирается из точек: пока идёт сборка, текст прозрачный, видны только точки на канвасе */
-.facts dt.is-dots {
-  color: transparent;
-}
-
-.fact-dots {
-  position: absolute;
-  inset: -48px;
-  width: calc(100% + 96px);
-  height: calc(100% + 96px);
-  pointer-events: none;
-  transition: opacity 0.5s ease;
-}
-
-.facts dt:not(.is-dots) .fact-dots {
-  opacity: 0;
-}
-
-.facts dd {
-  grid-column: 1;
-  grid-row: 1;
+.about-nums dd {
   margin: 0;
-  font-size: 15px;
+  font-size: clamp(15px, 1vw, 18px);
   line-height: 1.45;
   color: var(--muted);
 }
 
-/* «Инструменты» и «Нейросети»: строки слоёв и эффектов, как в панелях AE, вместо скруглённых плашек */
-.ae-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  column-gap: 24px;
-  margin: 0;
+/* инструменты и нейросети — сплошной строкой через лаймовую косую, без плашек */
+.about-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  margin: 0 0 22px;
   padding: 0;
   list-style: none;
+  font: 500 clamp(22px, 2.2vw, 36px) / 1.3 var(--display);
 }
 
-.ae-list li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 38px;
-  padding: 0 10px;
-  border-bottom: 1px solid var(--ae-grid);
-  font-size: 15px;
-  color: var(--text);
-  transition:
-    background 0.2s,
-    color 0.2s;
-}
-
-/* наведение — как выделенный слой: подсветка строки акцентом */
-.ae-list li:hover {
-  background: color-mix(in srgb, var(--accent) 9%, transparent);
+.about-tags li:not(:last-child)::after {
+  content: '/';
+  margin: 0 0.45em;
   color: var(--accent);
-}
-
-.ae-eye {
-  flex: none;
-  width: 16px;
-  height: 10px;
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1.4;
-  transition: stroke 0.2s;
-}
-
-.ae-eye circle {
-  fill: var(--muted);
-  stroke: none;
-  transition: fill 0.2s;
-}
-
-.ae-list li:hover .ae-eye {
-  stroke: var(--accent);
-}
-
-.ae-list li:hover .ae-eye circle {
-  fill: var(--accent);
-}
-
-.ae-list-n {
-  flex: none;
-  min-width: 18px;
-  font: 500 12px/1 var(--display);
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-
-.ae-fx {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 18px;
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  font: italic 600 11px/1 var(--body);
-  color: var(--accent);
-  transition: border-color 0.2s;
-}
-
-.ae-list li:hover .ae-fx {
-  border-color: var(--accent);
 }
 
 @media (max-width: 599px) {
-  .ae-head,
-  .ae-group {
-    padding-inline: 16px;
-  }
-  .ae-head span:first-child {
+  .about-hud span:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
