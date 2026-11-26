@@ -1,0 +1,70 @@
+---
+// Курсор — кнопка плей: на главной и на страницах кейсов. Стили — в global.css (.cursor).
+// Над ссылками и кнопками становится кнопкой в кольце, над [data-cursor] — плашкой с подписью.
+---
+
+<div class="cursor" aria-hidden="true">
+  <div class="cursor-body">
+    <svg class="cursor-play" viewBox="0 0 24 24">
+      <path d="M8 4.8v14.4a1.2 1.2 0 0 0 1.8 1l11.5-7.2a1.2 1.2 0 0 0 0-2L9.8 3.8A1.2 1.2 0 0 0 8 4.8Z"></path>
+    </svg>
+    <span class="cursor-label"></span>
+  </div>
+</div>
+
+<script>
+  // Только для мыши (на тач-экранах наведения нет) и без reduced motion.
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (finePointer && !reduce) {
+    // Едет за мышью с пружинкой и наклоняется по скорости.
+    const cursor = document.querySelector<HTMLElement>('.cursor')!;
+    const body = cursor.querySelector<HTMLElement>('.cursor-body')!;
+    const label = cursor.querySelector<HTMLElement>('.cursor-label')!;
+    document.documentElement.classList.add('has-cursor');
+
+    let x = -100, y = -100, cx = -100, cy = -100, tilt = 0, raf = 0;
+    const follow = () => {
+      const dx = x - cx;
+      cx += dx * 0.22;
+      cy += (y - cy) * 0.22;
+      tilt += (Math.max(-25, Math.min(25, dx * 0.6)) - tilt) * 0.2;
+      cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      body.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
+      raf = Math.abs(dx) + Math.abs(y - cy) + Math.abs(tilt) > 0.3 ? requestAnimationFrame(follow) : 0;
+    };
+    const kick = () => (raf ||= requestAnimationFrame(follow));
+
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      x = e.clientX;
+      y = e.clientY;
+      if (!cursor.classList.contains('is-visible')) {
+        cx = x;
+        cy = y;
+        cursor.classList.add('is-visible');
+      }
+      kick();
+
+      if (!(e.target instanceof Element)) return;
+      const target = e.target;
+      const labelled = target.closest<HTMLElement>('[data-cursor]');
+      const interactive = target.closest('a, button, [role="button"]');
+      cursor.classList.toggle('is-label', !!labelled);
+      cursor.classList.toggle('is-link', !labelled && !!interactive);
+      // На светлых местах (салатовые кнопки, стеклянная шапка) курсор тёмный, на тёмных кнопках шапки — салатовый.
+      const onLight =
+        !!target.closest('.btn-primary') ||
+        (!!target.closest('.topbar-pill, .mobile-menu') && !target.closest('.icon-btn, .tg-btn, .menu-btn'));
+      cursor.classList.toggle('is-ink', !labelled && onLight);
+      if (labelled) label.textContent = labelled.dataset.cursor!;
+    });
+    // во встроенных плеерах (Vimeo) свой системный курсор — наш прячем, пока мышь там
+    addEventListener('pointerover', (e) => {
+      if (e.target instanceof HTMLIFrameElement) cursor.classList.remove('is-visible');
+    });
+    document.addEventListener('pointerleave', () => cursor.classList.remove('is-visible'));
+    addEventListener('pointerdown', () => cursor.classList.add('is-down'));
+    addEventListener('pointerup', () => cursor.classList.remove('is-down'));
+  }
+</script>

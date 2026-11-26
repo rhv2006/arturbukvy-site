@@ -5,6 +5,7 @@ import '@fontsource-variable/manrope';
 import '../../styles/global.css';
 import { getImage } from 'astro:assets';
 import Contact from '../../components/Contact.astro';
+import Cursor from '../../components/Cursor.astro';
 import cases from '../../data/cases.json';
 import { projects, projectPath, vimeoThumb, type Project, type ProjectImage } from '../../lib/projects';
 
@@ -154,17 +155,84 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
       <a href="/">артурбуквы.рф</a>
     </footer>
 
+    <Cursor />
+
     <script>
+      // Пустые поля слева и справа от кейса: клик возвращает к работам на главной,
+      // курсор показывает подсказку «← На главную».
+      const page = document.querySelector<HTMLElement>('.case')!;
+      const canvasEl = document.querySelector<HTMLElement>('.case-canvas')!;
+      const BACK = '← На главную';
+      const inSide = (e: MouseEvent) => {
+        if (e.target !== page) return false;
+        const r = canvasEl.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right;
+      };
+      page.addEventListener('pointermove', (e) => {
+        if (inSide(e)) page.dataset.cursor = BACK;
+        else delete page.dataset.cursor;
+      });
+      page.addEventListener('pointerleave', () => delete page.dataset.cursor);
+      page.addEventListener('click', (e) => {
+        if (inSide(e) && !String(getSelection() ?? '')) location.href = '/#work';
+      });
+
       // Vimeo: плеер вставляется, когда видео подходит к экрану, и играет сам, без звука, по кругу —
-      // как на Behance. Панель управления остаётся, чтобы можно было включить звук.
+      // как на Behance. Поверх видео прозрачный слой: над ним остаётся наш курсор, клик включает
+      // и выключает звук. Нижняя полоса с панелью Vimeo открыта — там системный курсор и кнопки плеера.
       const params = 'autoplay=1&muted=1&loop=1&autopause=0&playsinline=1&badge=0&byline=0&title=0&portrait=0&dnt=1';
+      const VIMEO = 'https://player.vimeo.com';
+      const SOUND_ON = 'Включить звук', SOUND_OFF = 'Выключить звук';
+      const send = (frame: HTMLIFrameElement, method: string, value?: unknown) =>
+        frame.contentWindow?.postMessage(JSON.stringify(value === undefined ? { method } : { method, value }), VIMEO);
+      const cursorEl = document.querySelector<HTMLElement>('.cursor');
+
       const mount = (box: HTMLElement) => {
         const frame = document.createElement('iframe');
-        frame.src = `https://player.vimeo.com/video/${box.dataset.vimeo}?${params}`;
+        frame.src = `${VIMEO}/video/${box.dataset.vimeo}?${params}`;
         frame.allow = 'autoplay; fullscreen; picture-in-picture';
         frame.title = 'Видео';
         frame.addEventListener('load', () => box.classList.add('is-ready'), { once: true });
-        box.append(frame);
+
+        const hit = document.createElement('button');
+        hit.type = 'button';
+        hit.className = 'case-video-hit';
+        hit.setAttribute('aria-label', SOUND_ON);
+        hit.dataset.cursor = SOUND_ON;
+        let muted = true;
+        const setMuted = (m: boolean) => {
+          muted = m;
+          const text = m ? SOUND_ON : SOUND_OFF;
+          hit.dataset.cursor = text;
+          hit.setAttribute('aria-label', text);
+          const label = cursorEl?.querySelector('.cursor-label');
+          if (label && cursorEl!.classList.contains('is-label') && hit.matches(':hover')) label.textContent = text;
+        };
+        hit.addEventListener('click', () => {
+          send(frame, 'setMuted', !muted);
+          if (muted) send(frame, 'setVolume', 1); // включаем звук — громкость на максимум
+          send(frame, 'play');
+          setMuted(!muted);
+        });
+        // ушли с слоя вниз, на панель Vimeo: там свой курсор, наш прячем
+        hit.addEventListener('pointerleave', (e) => {
+          const r = box.getBoundingClientRect();
+          if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom)
+            cursorEl?.classList.remove('is-visible');
+        });
+        // звук переключили кнопкой самого плеера — подпись на курсоре подстраивается
+        addEventListener('message', (e) => {
+          if (e.origin !== VIMEO || e.source !== frame.contentWindow) return;
+          let data: { event?: string; data?: { volume?: number; muted?: boolean } };
+          try {
+            data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+          } catch {
+            return;
+          }
+          if (data.event === 'ready') send(frame, 'addEventListener', 'volumechange');
+          if (data.event === 'volumechange') setMuted(!!data.data?.muted || data.data?.volume === 0);
+        });
+        box.append(frame, hit);
       };
       const boxes = document.querySelectorAll<HTMLElement>('[data-vimeo]');
       if ('IntersectionObserver' in window) {
@@ -189,6 +257,10 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
 <style>
   .case {
     padding: 32px 0 64px;
+  }
+
+  .case[data-cursor] {
+    cursor: pointer;
   }
 
   /* шапка по ширине холста кейса; уже холста — с полями 16px */
@@ -291,6 +363,17 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     width: 100%;
     height: 100%;
     border: 0;
+  }
+
+  /* прозрачный слой над видео; снизу открыта панель плеера */
+  .case-video :global(.case-video-hit) {
+    position: absolute;
+    inset: 0 0 64px;
+    z-index: 1;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
   }
 
   .case-video img {

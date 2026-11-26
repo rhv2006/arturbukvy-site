@@ -8,6 +8,7 @@ import { xpFrames } from '../data/xp-frames';
 import { getArticles } from '../lib/teletype';
 import WorkGallery from '../components/WorkGallery.astro';
 import Contact from '../components/Contact.astro';
+import Cursor from '../components/Cursor.astro';
 
 const [{ top, rest }, articles] = await Promise.all([getCases(), getArticles()]);
 
@@ -407,14 +408,7 @@ const dateRu = (iso: string) =>
       <span>артурбуквы.рф</span>
     </footer>
 
-    <div class="cursor" aria-hidden="true">
-      <div class="cursor-body">
-        <svg class="cursor-play" viewBox="0 0 24 24">
-          <path d="M8 4.8v14.4a1.2 1.2 0 0 0 1.8 1l11.5-7.2a1.2 1.2 0 0 0 0-2L9.8 3.8A1.2 1.2 0 0 0 8 4.8Z"></path>
-        </svg>
-        <span class="cursor-label"></span>
-      </div>
-    </div>
+    <Cursor />
 
     <dialog class="reel" aria-label="Шоурил">
       <button class="reel-close" type="button" data-close-reel aria-label="Закрыть">×</button>
@@ -450,53 +444,6 @@ const dateRu = (iso: string) =>
       // Эффекты при наведении — только для мыши (на тач-экранах наведения нет).
       const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
       if (finePointer && !reduce) {
-        // Курсор — кнопка плей. Едет за мышью с пружинкой и наклоняется по скорости.
-        // Над ссылками и кнопками становится кнопкой в кольце, над [data-cursor] — плашкой с подписью.
-        const cursor = document.querySelector<HTMLElement>('.cursor')!;
-        const body = cursor.querySelector<HTMLElement>('.cursor-body')!;
-        const label = cursor.querySelector<HTMLElement>('.cursor-label')!;
-        document.documentElement.classList.add('has-cursor');
-
-        let x = -100, y = -100, cx = -100, cy = -100, tilt = 0, raf = 0;
-        const follow = () => {
-          const dx = x - cx;
-          cx += dx * 0.22;
-          cy += (y - cy) * 0.22;
-          tilt += (Math.max(-25, Math.min(25, dx * 0.6)) - tilt) * 0.2;
-          cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
-          body.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
-          raf = Math.abs(dx) + Math.abs(y - cy) + Math.abs(tilt) > 0.3 ? requestAnimationFrame(follow) : 0;
-        };
-        const kick = () => (raf ||= requestAnimationFrame(follow));
-
-        addEventListener('pointermove', (e) => {
-          if (e.pointerType !== 'mouse') return;
-          x = e.clientX;
-          y = e.clientY;
-          if (!cursor.classList.contains('is-visible')) {
-            cx = x;
-            cy = y;
-            cursor.classList.add('is-visible');
-          }
-          kick();
-
-          if (!(e.target instanceof Element)) return;
-          const target = e.target;
-          const labelled = target.closest<HTMLElement>('[data-cursor]');
-          const interactive = target.closest('a, button, [role="button"]');
-          cursor.classList.toggle('is-label', !!labelled);
-          cursor.classList.toggle('is-link', !labelled && !!interactive);
-          // На светлых местах (салатовые кнопки, стеклянная шапка) курсор тёмный, на тёмных кнопках шапки — салатовый.
-          const onLight =
-            !!target.closest('.btn-primary') ||
-            (!!target.closest('.topbar-pill, .mobile-menu') && !target.closest('.icon-btn, .tg-btn, .menu-btn'));
-          cursor.classList.toggle('is-ink', !labelled && onLight);
-          if (labelled) label.textContent = labelled.dataset.cursor!;
-        });
-        document.addEventListener('pointerleave', () => cursor.classList.remove('is-visible'));
-        addEventListener('pointerdown', () => cursor.classList.add('is-down'));
-        addEventListener('pointerup', () => cursor.classList.remove('is-down'));
-
         // Лёгкий 3D-наклон обложки за курсором.
         document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => {
           el.addEventListener('pointermove', (e) => {
