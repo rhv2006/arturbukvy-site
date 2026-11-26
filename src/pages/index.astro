@@ -1212,7 +1212,7 @@ const dateRu = (iso: string) =>
     </script>
     <script>
       // «Обо мне»: вместо фото — каркас 3D-модели головы, серые рёбра без заливки, как wireframe в Blender.
-      // Модель можно крутить перетаскиванием (с инерцией), под курсором мыши рёбра загораются лаймом.
+      // Модель можно крутить перетаскиванием (с инерцией), весь бюст поворачивается за курсором, под ним рёбра загораются лаймом.
       // Рисуется везде, где есть WebGL (фото остаётся запасным вариантом).
       import { Renderer, Camera, Transform, Program, Geometry, Mesh } from 'ogl';
 
@@ -1256,7 +1256,11 @@ const dateRu = (iso: string) =>
           if (!(low(a) && low(b))) kept.push(a, b);
         }
 
-        const uniforms = { uMouse: { value: [0, 0] }, uLensR: { value: 1 }, uLens: { value: 0 } };
+        const uniforms = {
+          uMouse: { value: [0, 0] },
+          uLensR: { value: 1 },
+          uLens: { value: 0 },
+        };
         const lensGlsl = /* glsl */ `
           uniform vec2 uMouse;
           uniform float uLensR;
@@ -1326,11 +1330,12 @@ const dateRu = (iso: string) =>
           if (z > maxZ) maxZ = z;
         }
         const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+        const PY = 0.4;
         const pivot = new Transform();
-        pivot.position.set(cx, 0, cz);
+        pivot.position.set(cx, PY, cz);
         pivot.setParent(scene);
         for (const m of [shell, wire]) {
-          m.position.set(-cx, 0, -cz);
+          m.position.set(-cx, -PY, -cz);
           m.setParent(pivot);
         }
 
@@ -1338,6 +1343,8 @@ const dateRu = (iso: string) =>
         let lens = 0, lensTo = 0, lx = 0, ly = 0, lxTo = 0, lyTo = 0, raf = 0;
         // поворот вокруг вертикали: rotY — угол, velY — скорость после броска
         let rotY = 0, velY = 0, dragging = false, lastX = 0, lastT = 0;
+        // взгляд за курсором: yaw — влево-вправо, pitch — вверх-вниз, с плавной доводкой
+        let yaw = 0, yawTo = 0, pitch = 0, pitchTo = 0;
         const frame = () => {
           raf = 0;
           if (!dragging) {
@@ -1345,7 +1352,11 @@ const dateRu = (iso: string) =>
             velY *= 0.94;
             if (Math.abs(velY) < 0.0002) velY = 0;
           }
-          pivot.rotation.y = rotY;
+          yaw += (yawTo - yaw) * 0.07;
+          pitch += (pitchTo - pitch) * 0.07;
+          // весь бюст: свой поворот (перетаскивание) плюс взгляд за курсором
+          pivot.rotation.y = rotY + yaw;
+          pivot.rotation.x = pitch;
           lens += (lensTo - lens) * 0.12;
           lx += (lxTo - lx) * 0.2;
           ly += (lyTo - ly) * 0.2;
@@ -1360,7 +1371,7 @@ const dateRu = (iso: string) =>
           box.style.setProperty('--lo', lens.toFixed(3));
           renderer.render({ scene, camera });
           wrap.classList.add('is-model');
-          if (velY || Math.abs(lensTo - lens) > 0.003 || (lens > 0.003 && Math.abs(lxTo - lx) + Math.abs(lyTo - ly) > 0.5))
+          if (velY || Math.abs(yawTo - yaw) + Math.abs(pitchTo - pitch) > 0.0008 || Math.abs(lensTo - lens) > 0.003 || (lens > 0.003 && Math.abs(lxTo - lx) + Math.abs(lyTo - ly) > 0.5))
             raf = requestAnimationFrame(frame);
         };
         const kick = () => (raf ||= requestAnimationFrame(frame));
@@ -1384,6 +1395,29 @@ const dateRu = (iso: string) =>
           lensTo = 0;
           kick();
         });
+        let inView = false;
+        new IntersectionObserver(([en]) => {
+          inView = en.isIntersecting;
+          if (!inView) (yawTo = 0), (pitchTo = 0), kick();
+        }).observe(box);
+        if (hoverOk)
+          addEventListener(
+            'pointermove',
+            (e) => {
+              if (!inView || dragging) return;
+              // где лицо на экране (без учёта поворота) — от него и считаем, куда смотреть
+              const r = box.getBoundingClientRect();
+              const cam = camera as unknown as { left: number; right: number; top: number; bottom: number };
+              const sx = r.left + ((cx - cam.left) / (cam.right - cam.left)) * r.width;
+              const sy = r.top + ((cam.top - 0.6) / (cam.top - cam.bottom)) * r.height;
+              const nx = Math.max(-1, Math.min(1, (e.clientX - sx) / (innerWidth * 0.5)));
+              const ny = Math.max(-1, Math.min(1, (e.clientY - sy) / (innerHeight * 0.5)));
+              yawTo = nx * 0.5;
+              pitchTo = ny * 0.18;
+              kick();
+            },
+            { passive: true },
+          );
         wrap.addEventListener('pointerdown', (e) => {
           if (e.button !== 0) return;
           dragging = true;
