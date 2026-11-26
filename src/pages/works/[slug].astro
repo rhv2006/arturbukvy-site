@@ -358,6 +358,12 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     margin: 40px 0;
     font-size: clamp(36px, 7vw, 72px);
   }
+  /* узкие телефоны: длинные слова вроде «Анимированный» должны целиком влезать в строку */
+  @media (max-width: 480px) {
+    .case-title {
+      font-size: clamp(26px, 8.4vw, 36px);
+    }
+  }
 
   /* картинки и видео идут встык, без белых полос между ними */
   .case-canvas {

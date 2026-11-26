@@ -50,6 +50,8 @@ h1,
 h2,
 h3 {
   font-family: var(--display);
+  /* страховка: слово, которое не влезает в строку, переносится, а не растягивает страницу вбок */
+  overflow-wrap: break-word;
   font-weight: 600;
   line-height: 1.05;
   margin: 0;
@@ -604,6 +606,13 @@ ul {
 
 .section h2 {
   font-size: clamp(30px, 4.5vw, 52px);
+}
+
+/* узкие телефоны: «автоматизации» целиком должно влезать в строку */
+@media (max-width: 480px) {
+  .section h2 {
+    font-size: clamp(24px, 7.4vw, 30px);
+  }
 }
 
 .section-head {
@@ -1871,6 +1880,9 @@ html:has(dialog[open]) .cursor {
 .about {
   display: grid;
   gap: 40px;
+  /* холсты сборки цифр из точек шире самих цифр — на телефоне не даём им расширять страницу вбок
+     (clip, а не hidden: не создаёт контейнер прокрутки и не ломает sticky у фото) */
+  overflow-x: clip;
 }
 
 @media (min-width: 900px) {
