@@ -200,7 +200,7 @@ const dateRu = (iso: string) =>
         <h2>Обо мне</h2>
         <div class="photo-wrap">
           <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
-          <canvas class="photo-mesh" aria-hidden="true"></canvas>
+          <canvas class="photo-3d" aria-hidden="true"></canvas>
         </div>
         <div>
           <p class="about-lead">
@@ -1201,125 +1201,141 @@ const dateRu = (iso: string) =>
       }
     </script>
     <script>
-      // Фото «Обо мне»: под курсором проявляется 3D-сетка. Рельеф берётся из яркости самого портрета,
-      // сетка чуть поворачивается вслед за мышью. Только для мыши и без reduced motion.
+      // Фото «Обо мне»: под курсором проступает лаймовый 3D-каркас лица — рёбра модели, сделанной по этому фото.
+      // Модель лежит точно поверх снимка, само фото не двигается. Только для мыши и без reduced motion.
+      import { Renderer, Camera, Transform, Program, Geometry, Mesh } from 'ogl';
+
+      const wrap = document.querySelector<HTMLElement>('.photo-wrap');
+      const canvas = wrap?.querySelector<HTMLCanvasElement>('.photo-3d');
       const meshOk =
         matchMedia('(hover: hover) and (pointer: fine)').matches &&
         !matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const wrap = document.querySelector<HTMLElement>('.photo-wrap');
-      const img = wrap?.querySelector<HTMLImageElement>('img');
-      const canvas = wrap?.querySelector<HTMLCanvasElement>('canvas');
-      if (meshOk && wrap && img && canvas) {
-        const ctx = canvas.getContext('2d')!;
-        const N = 56; // вершин по стороне
-        let height: Float32Array | null = null;
+      if (wrap && canvas && meshOk) initWire(wrap, canvas).catch(() => {});
 
-        const buildHeight = () => {
-          const c = document.createElement('canvas');
-          c.width = c.height = N;
-          const g = c.getContext('2d', { willReadFrequently: true })!;
-          g.drawImage(img, 0, 0, N, N);
-          const d = g.getImageData(0, 0, N, N).data;
-          height = new Float32Array(N * N);
-          for (let i = 0; i < N * N; i++) {
-            height[i] = (0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]) / 255;
-          }
-        };
-        if (img.complete && img.naturalWidth) buildHeight();
-        else img.addEventListener('load', buildHeight, { once: true });
+      async function initWire(wrap: HTMLElement, canvas: HTMLCanvasElement) {
+        let renderer: Renderer;
+        try {
+          renderer = new Renderer({ canvas, alpha: true, antialias: true, dpr: Math.min(devicePixelRatio || 1, 2), premultipliedAlpha: false });
+        } catch {
+          return;
+        }
+        const gl = renderer.gl;
+        gl.clearColor(0, 0, 0, 0);
 
-        let w = 0, h = 0, dpr = 1;
-        const resize = () => {
-          dpr = Math.min(devicePixelRatio || 1, 2);
-          w = wrap.clientWidth;
-          h = wrap.clientHeight;
-          canvas.width = w * dpr;
-          canvas.height = h * dpr;
-        };
-        new ResizeObserver(resize).observe(wrap);
-        resize();
+        // кадр фото в координатах модели (найден подгонкой рендера модели к artur.jpg)
+        const camera = new Camera(gl, { left: -0.4433, right: 0.4065, bottom: -0.013, top: 0.8369, near: 0.1, far: 10 });
+        camera.position.set(0, 0, 3);
+        const scene = new Transform();
 
-        // mx/my — курсор в долях (0..1), tx/ty — куда он едет; k — раскрытие линзы 0..1
-        let mx = 0.5, my = 0.5, tx = 0.5, ty = 0.5, k = 0, kt = 0, raf = 0, t0 = performance.now();
-        const px = new Float32Array(N * N), py = new Float32Array(N * N);
+        // bust_wire.bin: uint32 вершин, рёбер, треугольников; float32 позиции и нормали; uint16 рёбра и треугольники
+        const bin = await (await fetch('/models/bust_wire.bin')).arrayBuffer();
+        const [nv, ne, nt] = new Uint32Array(bin, 0, 3);
+        const o = 12, pos = new Float32Array(bin, o, nv * 3), nrm = new Float32Array(bin, o + nv * 12, nv * 3);
+        const eo = o + nv * 24, to = eo + ne * 4;
+        const edges = new Uint16Array(bin.slice(eo, eo + ne * 4));
+        const tris = new Uint16Array(bin.slice(to, to + nt * 6));
 
-        const frame = (now: number) => {
+        const uniforms = { uMouse: { value: [0, 0] }, uLensR: { value: 1 }, uLens: { value: 0 } };
+        const lensGlsl = /* glsl */ `
+          uniform vec2 uMouse;
+          uniform float uLensR;
+          uniform float uLens;
+          float lensAt(vec2 p) { return uLens * (1.0 - smoothstep(uLensR * 0.55, uLensR, distance(p, uMouse))); }`;
+        const vertex = (lift: string) => /* glsl */ `
+          attribute vec3 position;
+          attribute vec3 normal;
+          uniform mat4 modelViewMatrix;
+          uniform mat4 projectionMatrix;
+          void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * ${lift}, 1.0); }`;
+
+        // слепок: внутри линзы затемняет фото и закрывает задние рёбра
+        const shell = new Mesh(gl, {
+          geometry: new Geometry(gl, {
+            position: { size: 3, data: pos },
+            normal: { size: 3, data: nrm },
+            index: { data: tris },
+          }),
+          program: new Program(gl, {
+            vertex: vertex('0.0'),
+            fragment: /* glsl */ `
+              precision highp float;
+              ${lensGlsl}
+              void main() {
+                float a = lensAt(gl_FragCoord.xy);
+                if (a < 0.01) discard;
+                gl_FragColor = vec4(0.03, 0.04, 0.03, a * 0.78);
+              }`,
+            uniforms,
+            transparent: true,
+            cullFace: false,
+          }),
+        });
+        // рёбра модели — как wireframe в Blender, лаймом
+        const wire = new Mesh(gl, {
+          geometry: new Geometry(gl, {
+            position: { size: 3, data: pos },
+            normal: { size: 3, data: nrm },
+            index: { data: edges },
+          }),
+          mode: gl.LINES,
+          program: new Program(gl, {
+            vertex: vertex('0.004'),
+            fragment: /* glsl */ `
+              precision highp float;
+              ${lensGlsl}
+              void main() {
+                float a = lensAt(gl_FragCoord.xy);
+                if (a < 0.01) discard;
+                gl_FragColor = vec4(0.83, 1.0, 0.23, a);
+              }`,
+            uniforms,
+            transparent: true,
+            depthWrite: false,
+          }),
+        });
+        wire.renderOrder = 1;
+        shell.setParent(scene);
+        wire.setParent(scene);
+
+        // lens — раскрытие 0..1, lx/ly — курсор в пикселях канваса (низ = 0), всё с плавной доводкой
+        let lens = 0, lensTo = 0, lx = 0, ly = 0, lxTo = 0, lyTo = 0, raf = 0;
+        const frame = () => {
           raf = 0;
-          mx += (tx - mx) * 0.14;
-          my += (ty - my) * 0.14;
-          k += (kt - k) * 0.1;
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.clearRect(0, 0, w, h);
-          if (k < 0.005 && kt === 0) return;
-
-          if (height) {
-            const t = (now - t0) / 1000;
-            const ry = (mx - 0.5) * 0.9, rx = -(my - 0.5) * 0.9;
-            const cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
-            const depth = 0.32 * k, fov = 1.6;
-            for (let j = 0; j < N; j++) {
-              for (let i = 0; i < N; i++) {
-                const n = j * N + i;
-                const u = i / (N - 1) - 0.5, v = j / (N - 1) - 0.5;
-                // рельеф + бегущая по сетке мягкая волна
-                let z = (height[n] - 0.5) * depth + Math.sin(u * 9 + v * 6 - t * 2.2) * 0.012 * k;
-                // поворот вокруг Y, потом вокруг X
-                const x1 = u * cy + z * sy, z1 = -u * sy + z * cy;
-                const y2 = v * cx - z1 * sx, z2 = v * sx + z1 * cx;
-                const s = fov / (fov + z2);
-                px[n] = (0.5 + x1 * s) * w;
-                py[n] = (0.5 + y2 * s) * h;
-              }
-            }
-            // затемняем фото внутри линзы, чтобы сетка читалась
-            ctx.fillStyle = 'rgba(8, 10, 6, 0.72)';
-            ctx.fillRect(0, 0, w, h);
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(212, 255, 58, 0.85)';
-            ctx.beginPath();
-            for (let j = 0; j < N; j++) {
-              ctx.moveTo(px[j * N], py[j * N]);
-              for (let i = 1; i < N; i++) ctx.lineTo(px[j * N + i], py[j * N + i]);
-            }
-            for (let i = 0; i < N; i++) {
-              ctx.moveTo(px[i], py[i]);
-              for (let j = 1; j < N; j++) ctx.lineTo(px[j * N + i], py[j * N + i]);
-            }
-            ctx.stroke();
-            // узлы
-            ctx.fillStyle = 'rgba(232, 255, 150, 0.9)';
-            for (let n = 0; n < N * N; n += 3) ctx.fillRect(px[n] - 0.8, py[n] - 0.8, 1.6, 1.6);
-          }
-
-          // оставляем сетку только в круге вокруг курсора
-          const R = Math.max(w, h) * 0.34 * (0.35 + 0.65 * k);
-          const g = ctx.createRadialGradient(mx * w, my * h, 0, mx * w, my * h, R);
-          g.addColorStop(0, `rgba(0,0,0,${k})`);
-          g.addColorStop(0.6, `rgba(0,0,0,${0.85 * k})`);
-          g.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.globalCompositeOperation = 'destination-in';
-          ctx.fillStyle = g;
-          ctx.fillRect(0, 0, w, h);
-
-          raf = requestAnimationFrame(frame);
+          lens += (lensTo - lens) * 0.12;
+          lx += (lxTo - lx) * 0.2;
+          ly += (lyTo - ly) * 0.2;
+          uniforms.uLens.value = lens;
+          uniforms.uMouse.value = [lx, ly];
+          uniforms.uLensR.value = gl.canvas.height * 0.34 * (0.35 + 0.65 * lens);
+          renderer.render({ scene, camera });
+          if (Math.abs(lensTo - lens) > 0.003 || (lens > 0.003 && Math.abs(lxTo - lx) + Math.abs(lyTo - ly) > 0.5))
+            raf = requestAnimationFrame(frame);
         };
-        const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
-
+        const kick = () => (raf ||= requestAnimationFrame(frame));
+        const at = (e: PointerEvent) => {
+          const r = wrap.getBoundingClientRect(), dpr = renderer.dpr;
+          lxTo = (e.clientX - r.left) * dpr;
+          lyTo = (r.bottom - e.clientY) * dpr;
+        };
         wrap.addEventListener('pointerenter', (e) => {
-          const r = wrap.getBoundingClientRect();
-          mx = tx = (e.clientX - r.left) / r.width;
-          my = ty = (e.clientY - r.top) / r.height;
-          kt = 1;
+          at(e);
+          lx = lxTo;
+          ly = lyTo;
+          lensTo = 1;
           kick();
         });
         wrap.addEventListener('pointermove', (e) => {
-          const r = wrap.getBoundingClientRect();
-          tx = (e.clientX - r.left) / r.width;
-          ty = (e.clientY - r.top) / r.height;
+          at(e);
           kick();
         });
-        wrap.addEventListener('pointerleave', () => { kt = 0; kick(); });
+        wrap.addEventListener('pointerleave', () => {
+          lensTo = 0;
+          kick();
+        });
+        new ResizeObserver(() => {
+          renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+          kick();
+        }).observe(wrap);
       }
     </script>
   </body>

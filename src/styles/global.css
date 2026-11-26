@@ -1892,7 +1892,7 @@ html:has(dialog[open]) .cursor {
   overflow: hidden;
 }
 
-.photo-mesh {
+.photo-3d {
   position: absolute;
   inset: 0;
   width: 100%;
