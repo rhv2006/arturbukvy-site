@@ -195,45 +195,70 @@ const dateRu = (iso: string) =>
         </div>
       </section>
 
-      <WorkGallery top={top} rest={rest} tail={tail} behance={site.behance} />
+      <WorkGallery top={top} rest={rest} tail={tail} />
 
       <section id="about" class="section wrap about">
         <h2>Обо мне</h2>
-        <div class="photo-wrap">
-          <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
-          <canvas class="photo-3d" aria-hidden="true"></canvas>
-        </div>
-        <div>
-          <p class="about-lead">
-            Я Артур, дизайнер с 14-летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
-          </p>
-          <p>
-            Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса, в Cinema 4D, Redshift, Blender и
-            Unreal Engine 5. Делаю 3D-ролики для мобильных игр, в том числе рекламные fake gameplay. Веду CGI-ролики под ключ: идея, сценарий, сториборд, 3D-продакшен, композитинг. Адаптирую KV и
-            motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
-          </p>
-          <p>
-            Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.{' '}
-            <a class="link" href="#articles">Статьи об автоматизации ↓</a>
-          </p>
-
-          <dl class="facts">
-            {
-              facts.map((f) => (
-                <div>
-                  <dt>{f.value}</dt>
-                  <dd>{f.label}</dd>
-                </div>
-              ))
-            }
-          </dl>
-
-          <div class="stack">
-            <p class="stack-title">Инструменты</p>
-            <ul class="chips">{tools.map((t) => <li>{t}</li>)}</ul>
-            <p class="stack-title">Нейросети</p>
-            <ul class="chips">{ai.map((t) => <li>{t}</li>)}</ul>
+        <!-- «Обо мне» как проект After Effects: фото — выделенный слой в окне композиции, справа — его панель свойств -->
+        <figure class="ae-layer">
+          <figcaption class="ae-layer-name" aria-hidden="true"><span class="ae-layer-n">1</span>artur.aep</figcaption>
+          <div class="ae-frame">
+            <div class="photo-wrap">
+              <!-- квадрат фото: на десктопе слой тянется по высоте панели, квадрат обрезается по бокам, сетка остаётся на лице -->
+              <div class="photo-sq">
+                <img class="photo" src="/artur.jpg?v=2" alt="Артур Фаттахов" width="1000" height="1000" loading="lazy" />
+                <canvas class="photo-3d" aria-hidden="true"></canvas>
+              </div>
+            </div>
+            <span class="ae-sel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><b class="ae-anchor"></b></span>
           </div>
+        </figure>
+
+        <div class="ae-panel">
+          <div class="ae-head" aria-hidden="true">
+            <span>Effect Controls · <b>artur.aep</b></span>
+            <span class="ae-tc">0:00:14:00</span>
+          </div>
+
+          <div class="ae-group ae-source">
+            <p class="ae-prop" aria-hidden="true"><i class="ae-watch"></i>Source Text</p>
+            <p class="about-lead">
+              Я Артур, дизайнер с 14-летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
+            </p>
+            <p>
+              Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса, в Cinema 4D, Redshift, Blender и
+              Unreal Engine 5. Делаю 3D-ролики для мобильных игр, в том числе рекламные fake gameplay. Веду CGI-ролики под ключ: идея, сценарий, сториборд, 3D-продакшен, композитинг. Адаптирую KV и
+              motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
+            </p>
+            <p>
+              Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.{' '}
+              <a class="link" href="#articles">Статьи об автоматизации ↓</a>
+            </p>
+          </div>
+
+          <details class="ae-group" open>
+            <summary><span class="ae-twirl" aria-hidden="true"></span>Профиль</summary>
+            <dl class="facts">
+              {
+                facts.map((f) => (
+                  <div>
+                    <dt>{f.value}</dt>
+                    <dd>{f.label}</dd>
+                  </div>
+                ))
+              }
+            </dl>
+          </details>
+
+          <details class="ae-group" open>
+            <summary><span class="ae-twirl" aria-hidden="true"></span>Инструменты<span class="ae-count">{tools.length}</span></summary>
+            <ul class="chips">{tools.map((t) => <li>{t}</li>)}</ul>
+          </details>
+
+          <details class="ae-group">
+            <summary><span class="ae-twirl" aria-hidden="true"></span>Effects · нейросети<span class="ae-count">{ai.length}</span></summary>
+            <ul class="chips">{ai.map((t) => <li>{t}</li>)}</ul>
+          </details>
         </div>
       </section>
 
@@ -355,7 +380,7 @@ const dateRu = (iso: string) =>
 
       <section class="wrap xp-cta">
         <div>
-          <h3>Всё то же самое — одним файлом</h3>
+          <h3>Всё то же самое одним файлом</h3>
           <p>Резюме в PDF для тех, кому некогда листать.</p>
         </div>
         <div class="xp-cta-btns">
@@ -1209,6 +1234,8 @@ const dateRu = (iso: string) =>
         }
         const gl = renderer.gl;
         gl.clearColor(0, 0, 0, 0);
+        // квадрат фото, в котором лежит холст: координаты курсора и размер холста — по нему
+        const box = canvas.parentElement as HTMLElement;
 
         // кадр фото в координатах модели (найден подгонкой рендера модели к artur.jpg). Низ кадра — по срезу бюста:
         // фото увеличено на 1.79% от верхнего края (.photo), полоска снизу, куда модель не доходит, обрезана
@@ -1302,19 +1329,19 @@ const dateRu = (iso: string) =>
           uniforms.uLens.value = lens;
           uniforms.uMouse.value = [lx, ly];
           uniforms.uLensR.value = gl.canvas.height * 0.34 * (0.35 + 0.65 * lens);
-          // затемнение фото — CSS-градиент под канвасом (.photo-wrap::after), ровный круг того же размера
+          // затемнение фото — CSS-градиент под канвасом (.photo-sq::after), ровный круг того же размера
           const dpr = renderer.dpr;
-          wrap.style.setProperty('--lx', `${lx / dpr}px`);
-          wrap.style.setProperty('--ly', `${wrap.clientHeight - ly / dpr}px`);
-          wrap.style.setProperty('--lr', `${uniforms.uLensR.value / dpr}px`);
-          wrap.style.setProperty('--lo', lens.toFixed(3));
+          box.style.setProperty('--lx', `${lx / dpr}px`);
+          box.style.setProperty('--ly', `${box.clientHeight - ly / dpr}px`);
+          box.style.setProperty('--lr', `${uniforms.uLensR.value / dpr}px`);
+          box.style.setProperty('--lo', lens.toFixed(3));
           renderer.render({ scene, camera });
           if (Math.abs(lensTo - lens) > 0.003 || (lens > 0.003 && Math.abs(lxTo - lx) + Math.abs(lyTo - ly) > 0.5))
             raf = requestAnimationFrame(frame);
         };
         const kick = () => (raf ||= requestAnimationFrame(frame));
         const at = (e: PointerEvent) => {
-          const r = wrap.getBoundingClientRect(), dpr = renderer.dpr;
+          const r = box.getBoundingClientRect(), dpr = renderer.dpr;
           lxTo = (e.clientX - r.left) * dpr;
           lyTo = (r.bottom - e.clientY) * dpr;
         };
@@ -1334,9 +1361,9 @@ const dateRu = (iso: string) =>
           kick();
         });
         new ResizeObserver(() => {
-          renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+          renderer.setSize(box.clientWidth, box.clientHeight);
           kick();
-        }).observe(wrap);
+        }).observe(box);
       }
     </script>
     <script>

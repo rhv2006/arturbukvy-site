@@ -18,9 +18,8 @@ interface Props {
   rest: Case[];
   /** кейсы после заглушек «AI video» и «Mobile games» */
   tail?: Case[];
-  behance: string;
 }
-const { top, rest, tail = [], behance } = Astro.props;
+const { top, rest, tail = [] } = Astro.props;
 
 // Работы не с Behance: идут последними. Если файла обложки в public/ ещё нет, карточка рисуется заглушкой с названием.
 const extraWorks = [
@@ -94,9 +93,30 @@ const items: Item[] = await Promise.all([
 /** Свои страницы открываются в той же вкладке, Behance и прочее — в новой. */
 const ext = (url?: string) => /^https?:/.test(url ?? '');
 const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.cover ? 'img' : 'stub');
+
+// После «Mobile games» — карточка «Ещё кейсы»: пока она есть, остальные кейсы свёрнуты (и в ленте, и в плитке).
+// Клик раскрывает их на её месте, сама карточка уходит.
+const plural = (n: number, one: string, few: string, many: string) =>
+  n % 10 === 1 && n % 100 !== 11 ? one : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? few : many;
+const cutAt = items.length - tail.length;
+type View = Item & { extra?: boolean; more?: boolean };
+const view: View[] = tail.length
+  ? [
+      ...items.slice(0, cutAt),
+      {
+        title: 'Ещё кейсы',
+        tag: `ещё ${tail.length} ${plural(tail.length, 'проект', 'проекта', 'проектов')}`,
+        url: '#work',
+        stub: 'Ещё кейсы',
+        icon: 'more',
+        more: true,
+      },
+      ...items.slice(cutAt).map((c) => ({ ...c, extra: true })),
+    ]
+  : items;
 ---
 
-<section id="work" class="section work-section" data-work data-mode="ribbon">
+<section id="work" class="section work-section" data-work data-mode="ribbon" data-collapsed={tail.length ? '' : undefined}>
   <h2 class="work-sr">Избранные работы</h2>
   <div class="wrap work-controls">
     <div class="work-modes" role="group" aria-label="Вид">
@@ -111,7 +131,6 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
         </svg>
       </button>
     </div>
-    <a class="link link-accent work-behance" href={behance} target="_blank" rel="noopener">Все проекты на Behance ↗</a>
   </div>
 
   <div class="work-stage">
@@ -135,9 +154,16 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
 
     <ol class="wrap work-grid">
       {
-        items.map((c, i) => (
-          <li class="work-item" data-kind={kindOf(c)}>
-            <a class="work-link" href={c.url} target={ext(c.url) ? '_blank' : undefined} rel="noopener" data-cursor="Смотреть" draggable="false">
+        view.map((c, i) => (
+          <li class:list={['work-item', { 'is-extra': c.extra, 'is-more': c.more }]} data-kind={kindOf(c)}>
+            <a
+              class="work-link"
+              href={c.url}
+              target={ext(c.url) ? '_blank' : undefined}
+              rel="noopener"
+              data-cursor={c.more ? 'Ещё' : 'Смотреть'}
+              data-work-more={c.more ? '' : undefined}
+              draggable="false">
               <div class="work-media">
                 {c.cover && (
                   <img class="work-img" src={c.cover} alt="" loading={i < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false" />
@@ -164,6 +190,13 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
                         <path d="M27 20v14l12-7z" fill="currentColor" />
                         <path d="M10 40h44" opacity=".5" />
                         <path d="M10 40h18" />
+                      </svg>
+                    )}
+                    {c.icon === 'more' && (
+                      <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+                        <rect x="12" y="2" width="50" height="34" rx="5" opacity=".45" />
+                        <rect x="2" y="12" width="50" height="34" rx="5" />
+                        <path d="M27 21v16M19 29h16" />
                       </svg>
                     )}
                     {c.icon === 'gamepad' && (
@@ -218,23 +251,12 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
     border-radius: 99px;
     background: rgb(11 11 13 / 0.6);
   }
-  .work-behance {
-    grid-column: 3;
-    justify-self: end;
-  }
   @media (max-width: 767px) {
     .work-controls {
       grid-template-columns: auto 1fr;
     }
     .work-modes {
       grid-column: 1;
-    }
-    .work-behance {
-      grid-column: 2;
-      /* на узких телефонах (320px) ссылка переносится на две строки, а не растягивает страницу вбок */
-      min-width: 0;
-      white-space: normal;
-      text-align: right;
     }
   }
   .work-mode {
@@ -412,6 +434,12 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
   }
   .work-link:hover .work-title {
     color: var(--accent);
+  }
+
+  /* ---- «Ещё кейсы»: пока список свёрнут, остальных кейсов нет ни в ленте, ни в плитке ---- */
+  .work-section[data-collapsed] .work-item.is-extra,
+  .work-section:not([data-collapsed]) .work-item.is-more {
+    display: none;
   }
 
   /* ---- фолбэк-лента: свайп-слайдер без шейдеров ---- */
@@ -720,7 +748,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
     const reduceMq = matchMedia('(prefers-reduced-motion: reduce)');
     const wideMq = matchMedia('(min-width: 768px)');
 
-    const items: Item[] = [...list.querySelectorAll<HTMLLIElement>('.work-item')].map((li) => ({
+    const allItems: Item[] = [...list.querySelectorAll<HTMLLIElement>('.work-item')].map((li) => ({
       li,
       media: li.querySelector<HTMLElement>('.work-media')!,
       kind: li.dataset.kind as Kind,
@@ -740,6 +768,10 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       hoverTo: 0,
       onScreen: false,
     }));
+    // items — карточки, которые сейчас есть в ленте и плитке: пока список свёрнут — до «Ещё кейсы» включительно,
+    // после раскрытия — все, кроме неё. Плоскости WebGL создаются для всех (allItems), лишние просто не рисуются.
+    const shown = (it: Item) => ('collapsed' in sec.dataset ? !it.li.classList.contains('is-extra') : !it.li.classList.contains('is-more'));
+    let items = allItems.filter(shown);
 
     let mode: 'ribbon' | 'grid' = 'ribbon';
     let glOn = false;
@@ -765,18 +797,43 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       (entries) =>
         entries.forEach(({ target, isIntersecting }) => {
           if (glOn) return;
-          const it = items.find((i) => i.media === target);
+          const it = allItems.find((i) => i.media === target);
           it?.videos.forEach((v) => (isIntersecting && !reduceMq.matches ? startVideo(v) : stopVideo(v)));
         }),
       { rootMargin: '200px' },
     );
-    items.forEach((it) => it.videos.length && videoIo.observe(it.media));
+    allItems.forEach((it) => it.videos.length && videoIo.observe(it.media));
 
     // ---------- переключатель вида (работает и без WebGL) ----------
     const press = (btns: HTMLButtonElement[], on: HTMLButtonElement) =>
       btns.forEach((b) => b.setAttribute('aria-pressed', String(b === on)));
 
     modeBtns.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.modeBtn as 'ribbon' | 'grid', b)));
+    // «Ещё кейсы»: раскрываем остальные кейсы на месте карточки; в ленте в центр встаёт первый из них
+    const expand = () => {
+      if (!('collapsed' in sec.dataset)) return;
+      const kMore = items.findIndex((it) => it.li.classList.contains('is-more'));
+      delete sec.dataset.collapsed;
+      items = allItems.filter(shown);
+      // карточки плавно переезжают на новые места; в центре ленты — первый раскрытый кейс
+      const now = performance.now();
+      allItems.forEach((it) => {
+        if (it.cur) {
+          it.from = { ...it.cur };
+          it.t0 = now;
+          it.dur = 700;
+        }
+      });
+      off = tgt = offPrev = Math.max(0, kMore);
+      activeIdx = -1;
+      setActive(Math.max(0, kMore));
+      kick();
+    };
+    list.querySelector<HTMLAnchorElement>('[data-work-more]')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      expand();
+      if (mode === 'grid' || !glOn) list.querySelector<HTMLAnchorElement>('.work-item.is-extra .work-link')?.focus({ preventScroll: true });
+    });
 
     // ===================== WebGL =====================
     let renderer: Renderer | null = null;
@@ -852,7 +909,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
     };
 
     const buildMeshes = (blank: HTMLCanvasElement) => {
-      items.forEach((it) => {
+      allItems.forEach((it) => {
         const tex = new Texture(gl, { image: blank, generateMipmaps: false, minFilter: gl.LINEAR, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
         const uni = {
           ...shared,
@@ -1043,6 +1100,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       frameEl.href = it.url;
       frameEl.target = new URL(it.url).origin === location.origin ? '' : '_blank';
       frameLabel.textContent = it.title;
+      frameEl.dataset.cursor = it.li.classList.contains('is-more') ? 'Ещё' : 'Смотреть';
       capTitle.textContent = nbsp(it.title);
       capTag.textContent = nbsp(it.tag);
       caption.classList.remove('is-swap');
@@ -1095,9 +1153,16 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       shared.uEdge.value = 0.35 + 0.65 * blend;
       shared.uVel.value = Math.min(ribbonVel * 2.2 * blend + (scrollVel / 60) * (1 - blend) * 1.2, 1.4);
 
-      items.forEach((it) => {
+      allItems.forEach((it) => {
         const mesh = it.mesh!;
         const k = items.indexOf(it);
+        // свёрнутые кейсы (или уже ненужную «Ещё кейсы») не рисуем
+        if (k < 0) {
+          mesh.visible = false;
+          it.onScreen = false;
+          it.cur = null;
+          return;
+        }
         // цель: место в ленте или в сетке
         const target: Rect = mode === 'ribbon' ? ribbonRect(k, n, sr) : gridRect(it);
 
@@ -1201,7 +1266,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
         cancelAnimationFrame(raf);
         raf = 0;
         // фолбэк сам запустит ролики через IntersectionObserver
-        items.forEach((it) => {
+        allItems.forEach((it) => {
           it.videos.forEach(stopVideo);
           videoIo.unobserve(it.media);
           if (it.videos.length) videoIo.observe(it.media);
@@ -1333,6 +1398,11 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       if (moved) {
         e.preventDefault();
         moved = false;
+        return;
+      }
+      if (items[activeIdx]?.li.classList.contains('is-more')) {
+        e.preventDefault();
+        expand();
       }
     });
 
@@ -1374,6 +1444,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
         sessionStorage.removeItem('work-last');
       } catch {}
       if (!path) return;
+      if (allItems.some((it) => it.li.classList.contains('is-extra') && new URL(it.url).pathname === path)) expand();
       const k = items.findIndex((it) => new URL(it.url).pathname === path);
       if (k < 0) return;
       off = tgt = offPrev = k;
