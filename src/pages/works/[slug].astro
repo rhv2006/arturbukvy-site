@@ -16,7 +16,6 @@ export function getStaticPaths() {
 const { project } = Astro.props as { project: Project };
 const meta = (cases.cases as Record<string, { title?: string; tag?: string }>)[project.id] ?? {};
 const title = meta.title ?? project.title;
-const year = project.published.slice(0, 4);
 
 // Исходник с Behance → WebP нескольких ширин на нашем домене. GIF оставляем как есть.
 const WIDTHS = [700, 1400, 2800];
@@ -40,7 +39,7 @@ const modules = await Promise.all(
     if (m.type === 'image') return { ...m, pic: await pic(m) };
     if (m.type === 'grid') return { ...m, pics: await Promise.all(m.images.map(pic)) };
     if (m.type === 'vimeo') return { ...m, thumb: await vimeoThumb(m.id) };
-    if (m.type === 'youtube') return { ...m, thumb: `https://i.ytimg.com/vi/${m.id}/hqdefault.jpg` };
+    if (m.type === 'youtube') return { ...m, thumb: `https://i.ytimg.com/vi/${m.id}/maxresdefault.jpg` };
     return m;
   }),
 );
@@ -86,8 +85,6 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
       <header class="case-head">
         <a class="case-back" href="/#work">← Все работы</a>
         <h1 class="case-title">{title}</h1>
-        <p class="case-meta">{meta.tag && <span>{meta.tag}</span>}<span>{year}</span></p>
-        {project.description && <p class="case-desc">{project.description}</p>}
       </header>
 
       <div
@@ -95,7 +92,6 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
         style={[
           `--canvas-w: ${project.canvas.width}px`,
           `--canvas-bg: ${project.canvas.background ?? 'transparent'}`,
-          `--canvas-gap: ${project.canvas.gap ?? 0}px`,
           `--canvas-pad: ${project.canvas.paddingTop ?? 0}px`,
           `--canvas-text: ${project.canvas.textColor ?? '#696969'}`,
           `--canvas-link: ${project.canvas.linkColor ?? '#1769FF'}`,
@@ -184,6 +180,10 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     <script>
       // Пустые поля слева и справа от кейса: клик возвращает к работам на главной,
       // курсор показывает подсказку «← На главную».
+      // запоминаем кейс: вернувшись на главную, лента встанет на него
+      try {
+        sessionStorage.setItem('work-last', location.pathname);
+      } catch {}
       const page = document.querySelector<HTMLElement>('.case')!;
       const canvasEl = document.querySelector<HTMLElement>('.case-canvas')!;
       const BACK = '← На главную';
@@ -209,12 +209,12 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
       const SOUND_ON = 'Включить звук', SOUND_OFF = 'Выключить звук';
       const send = (frame: HTMLIFrameElement, method: string, value?: unknown) =>
         frame.contentWindow?.postMessage(JSON.stringify(value === undefined ? { method } : { method, value }), VIMEO);
-      const yt = (frame: HTMLIFrameElement, func: string) =>
-        frame.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args: [] }), YOUTUBE);
+      const yt = (frame: HTMLIFrameElement, func: string, args: unknown[] = []) =>
+        frame.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), YOUTUBE);
       const cursorEl = document.querySelector<HTMLElement>('.cursor');
       const srcFor = (kind: string, id: string) =>
         kind === 'youtube'
-          ? `${YOUTUBE}/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
+          ? `${YOUTUBE}/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&vq=hd2160&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
           : `${VIMEO}/video/${id}?autoplay=1&muted=1&loop=1&autopause=0&playsinline=1&badge=0&byline=0&title=0&portrait=0&dnt=1`;
 
       const mount = (box: HTMLElement) => {
@@ -224,6 +224,16 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
         frame.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
         frame.title = 'Видео';
         frame.addEventListener('load', () => box.classList.add('is-ready'), { once: true });
+        // YouTube без звука стартует в низком качестве — просим самое высокое, пока плеер раскачивается
+        if (kind === 'youtube')
+          frame.addEventListener(
+            'load',
+            () => {
+              frame.contentWindow?.postMessage(JSON.stringify({ event: 'listening' }), YOUTUBE);
+              for (const t of [300, 1500, 4000]) setTimeout(() => yt(frame, 'setPlaybackQuality', ['highres']), t);
+            },
+            { once: true },
+          );
 
         const hit = document.createElement('button');
         hit.type = 'button';
@@ -250,11 +260,22 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
           }
           setMuted(!muted);
         });
-        // ушли с слоя вниз, на панель Vimeo: там свой курсор, наш прячем
+        // ушли со слоя вниз, на панель плеера: наш курсор прячем, а слой убираем целиком,
+        // чтобы кнопки и всплывающие меню плеера (настройки, полный экран) нажимались.
+        // Слой возвращается, когда мышь выйдет из видео (документ снова получит pointermove).
         hit.addEventListener('pointerleave', (e) => {
           const r = box.getBoundingClientRect();
-          if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom)
-            cursorEl?.classList.remove('is-visible');
+          if (!(e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom)) return;
+          cursorEl?.classList.remove('is-visible');
+          hit.style.pointerEvents = 'none';
+          setTimeout(() => {
+            const restore = (ev: PointerEvent) => {
+              if (ev.target instanceof Node && box.contains(ev.target)) return;
+              hit.style.pointerEvents = '';
+              removeEventListener('pointermove', restore);
+            };
+            addEventListener('pointermove', restore);
+          });
         });
         // звук переключили кнопкой самого плеера — подпись на курсоре подстраивается
         addEventListener('message', (e) => {
@@ -332,28 +353,14 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
   }
 
   .case-title {
-    margin: 40px 0 12px;
+    margin: 40px 0;
     font-size: clamp(36px, 7vw, 72px);
   }
 
-  .case-meta {
-    display: flex;
-    gap: 16px;
-    margin: 0 0 40px;
-    color: var(--muted);
-  }
-
-  .case-desc {
-    max-width: 760px;
-    margin: -16px 0 40px;
-    color: var(--muted);
-    white-space: pre-line;
-  }
-
+  /* картинки и видео идут встык, без белых полос между ними */
   .case-canvas {
     display: flex;
     flex-direction: column;
-    gap: var(--canvas-gap);
     padding-top: var(--canvas-pad);
     width: min(var(--canvas-w), 100%);
     margin-inline: auto;
@@ -424,7 +431,7 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
   /* прозрачный слой над видео; снизу открыта панель плеера */
   .case-video :global(.case-video-hit) {
     position: absolute;
-    inset: 0 0 64px;
+    inset: 0 0 72px;
     z-index: 1;
     padding: 0;
     border: 0;
@@ -449,6 +456,7 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     font-size: 20px;
     line-height: 1.4;
     overflow-wrap: anywhere;
+    padding-block: 40px;
   }
 
   .case-text :global(.bold) {

@@ -1361,5 +1361,23 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       if (!infinite(n)) tgt = clamp(tgt, 0, n - 1);
       kick();
     });
+
+    // вернулись со страницы кейса — лента стоит на нём же
+    const restoreLast = () => {
+      let path: string | null = null;
+      try {
+        path = sessionStorage.getItem('work-last');
+        sessionStorage.removeItem('work-last');
+      } catch {}
+      if (!path) return;
+      const k = items.findIndex((it) => new URL(it.url).pathname === path);
+      if (k < 0) return;
+      off = tgt = offPrev = k;
+      holdAuto();
+      setActive(k);
+      kick();
+    };
+    restoreLast();
+    addEventListener('pageshow', (e) => e.persisted && restoreLast());
   }
 </script>

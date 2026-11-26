@@ -12,16 +12,12 @@
   "canvas": {
     "width": 1400,
     "background": "#FFFFFF",
-    "paddingTop": 80,
+    "paddingTop": 0,
     "gap": 60,
     "textColor": "#696969",
     "linkColor": "#1769FF"
   },
   "modules": [
-    {
-      "type": "text",
-      "html": "<div style=\"text-align:center;\"><span style=\"font-size:25px;\" class=\"texteditor-inline-fontsize\">KV для идеи безопасного гида с Касперским</span></div>"
-    },
     {
       "type": "text",
       "html": "<div style=\"font-size:19px;text-align:center;\"><span class=\"texteditor-inline-fontsize\" style=\"font-size:19px;\">Специальный проект, посвященный теме безопасности, актуален в любых обстоятельствах и в любом месте. Этот проект создан с помощью искусственного интеллекта.</span></div>"
