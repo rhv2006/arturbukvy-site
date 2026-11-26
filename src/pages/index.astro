@@ -9,6 +9,7 @@ import { getArticles } from '../lib/teletype';
 import WorkGallery from '../components/WorkGallery.astro';
 import Contact from '../components/Contact.astro';
 import Cursor from '../components/Cursor.astro';
+import SmoothScroll from '../components/SmoothScroll.astro';
 
 const [{ top, rest, tail }, articles] = await Promise.all([getCases(), getArticles()]);
 
@@ -409,6 +410,7 @@ const dateRu = (iso: string) =>
     </footer>
 
     <Cursor />
+    <SmoothScroll />
 
     <dialog class="reel" aria-label="Шоурил">
       <button class="reel-close" type="button" data-close-reel aria-label="Закрыть">×</button>
@@ -1004,6 +1006,7 @@ const dateRu = (iso: string) =>
             if (!play) return;
             cancelAnimationFrame(play);
             play = 0;
+            delete document.documentElement.dataset.autoplay;
             setHint(false);
           };
           const start = () => {
@@ -1012,6 +1015,9 @@ const dateRu = (iso: string) =>
             if (to - from < 2) return false;
             const dur = Math.max(600, (FULL_MS * (to - from)) / total);
             playT0 = performance.now();
+            // инерционный скролл (Lenis) на время автопрокрутки отдаёт колесо странице и гасит свой разгон
+            document.documentElement.dataset.autoplay = '';
+            (window as unknown as { lenis?: { scrollTo: (t: number, o: object) => void } }).lenis?.scrollTo(from, { immediate: true, force: true });
             setHint(true);
             const step = (now: number) => {
               const k = Math.min(1, (now - playT0) / dur);

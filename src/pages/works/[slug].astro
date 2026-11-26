@@ -6,6 +6,7 @@ import '../../styles/global.css';
 import { getImage } from 'astro:assets';
 import Contact from '../../components/Contact.astro';
 import Cursor from '../../components/Cursor.astro';
+import SmoothScroll from '../../components/SmoothScroll.astro';
 import cases from '../../data/cases.json';
 import { projects, projectPath, vimeoThumb, type Project, type ProjectImage } from '../../lib/projects';
 
@@ -176,6 +177,7 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     </footer>
 
     <Cursor />
+    <SmoothScroll />
 
     <script>
       // Пустые поля слева и справа от кейса: клик возвращает к работам на главной,

@@ -1,0 +1,25 @@
+---
+// Инерционный скролл колесом/тачпадом (Lenis), как на hookframe.app.
+// Тач на телефонах остаётся нативным; при reduced motion не включается.
+---
+
+<script>
+  import Lenis from 'lenis';
+  import 'lenis/dist/lenis.css';
+
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const lenis = new Lenis({
+      duration: 1.1,
+      autoRaf: true,
+      // якорные ссылки тоже едут плавно, с отступом под шапку (как scroll-padding-top)
+      anchors: { offset: -96 },
+      // внутри шоурила и прокручиваемых блоков — свой скролл
+      allowNestedScroll: true,
+      prevent: (node) => !!node.closest('dialog'),
+      // если обработчик уже забрал колесо себе (лента работ листается горизонтально) — страницу не крутим
+      // и пока «Опыт» сам прокручивает таймлайн — колесо работает нативно и просто останавливает автоплей
+      virtualScroll: ({ event }) => !event.defaultPrevented && !('autoplay' in document.documentElement.dataset),
+    });
+    (window as unknown as { lenis: Lenis }).lenis = lenis;
+  }
+</script>
