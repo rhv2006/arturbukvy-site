@@ -213,7 +213,7 @@ const dateRu = (iso: string) =>
             motion под 15+ форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
           </p>
           <p>
-            Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.
+            Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.{' '}
             <a class="link" href="#articles">Статьи об автоматизации ↓</a>
           </p>
 
@@ -688,25 +688,6 @@ const dateRu = (iso: string) =>
             ss.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, life: 0, max: 35 + Math.random() * 35, r: 1.5 + Math.random() * 2.5 });
           }
           raf ||= requestAnimationFrame(tick);
-        });
-      }
-
-      // Плавное появление блоков при прокрутке.
-      if (!reduce) {
-        const items = document.querySelectorAll<HTMLElement>('.card, .section h2, .about-lead, .facts > div, .xp-cta, .contact-title');
-        const reveal = new IntersectionObserver(
-          (entries) =>
-            entries.forEach((e) => {
-              if (e.isIntersecting) {
-                e.target.classList.add('is-in');
-                reveal.unobserve(e.target);
-              }
-            }),
-          { rootMargin: '0px 0px -8% 0px' },
-        );
-        items.forEach((el) => {
-          el.classList.add('reveal');
-          reveal.observe(el);
         });
       }
 

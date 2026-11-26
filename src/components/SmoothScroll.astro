@@ -1,6 +1,6 @@
 ---
-// Инерционный скролл колесом/тачпадом (Lenis), как на hookframe.app.
-// Тач на телефонах остаётся нативным; при reduced motion не включается.
+// Движение при прокрутке, как на hookframe.app: инерционный скролл колесом/тачпадом (Lenis)
+// и «доезжание» блоков при появлении. Тач на телефонах остаётся нативным; при reduced motion ничего не включается.
 ---
 
 <script>
@@ -21,5 +21,50 @@
       virtualScroll: ({ event }) => !event.defaultPrevented && !('autoplay' in document.documentElement.dataset),
     });
     (window as unknown as { lenis: Lenis }).lenis = lenis;
+
+    // «Доезжание» текста и блоков: появляются, когда верх входит в нижние 12% экрана.
+    // Что вошло одной пачкой — с лесенкой 90 мс.
+    const items = new Set(
+      document.querySelectorAll<HTMLElement>(
+        [
+          // главная: первый экран (при загрузке, лесенкой), «Обо мне» по абзацам и строкам плашек
+          '.hero-content > *',
+          '.section h2', '.section-lead', '.about p', '.about .chips', '.facts > div', '.card',
+          '.xp-cta', '.contact-title', '.contact-links', '.contact .btn', '.footer',
+          // кейсы
+          '.case-title', '.case-text', // картинки кейса стоят вплотную — их не двигаем, иначе между ними мелькают щели
+        ].join(','),
+      ),
+    );
+    const done = (el: HTMLElement) => {
+      el.classList.remove('reveal', 'is-in');
+      el.style.transitionDelay = '';
+    };
+    const show = (els: HTMLElement[], base = 0) =>
+      els.forEach((el, i) => {
+        el.style.transitionDelay = `${base + Math.min(i, 6) * 90}ms`;
+        el.classList.add('is-in');
+        el.addEventListener('transitionend', (t) => t.target === el && t.propertyName === 'translate' && done(el));
+        setTimeout(() => done(el), base + 2000); // на случай, если transitionend не придёт
+      });
+    const io = new IntersectionObserver(
+      (entries) => {
+        const els = entries.filter((e) => e.isIntersecting).map((e) => e.target as HTMLElement);
+        els.forEach((el) => io.unobserve(el));
+        show(els);
+      },
+      { rootMargin: '0px 0px -12% 0px' },
+    );
+    // что видно уже при загрузке (первый экран целиком, с кнопками внизу) — доезжает сразу, лесенкой
+    const first: HTMLElement[] = [];
+    for (const el of items) {
+      const r = el.getBoundingClientRect();
+      // то, что уже выше экрана (вернулись назад к кейсу), не прячем
+      if (r.bottom < 0) continue;
+      el.classList.add('reveal');
+      if (r.top < innerHeight) first.push(el);
+      else io.observe(el);
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => show(first, 150)));
   }
 </script>
