@@ -1876,10 +1876,11 @@ html:has(dialog[open]) .cursor {
 @media (min-width: 900px) {
   .about {
     grid-template-columns: minmax(280px, 32%) 1fr;
-    gap: 64px;
+    gap: 40px 64px;
     align-items: start;
   }
-  .photo-wrap {
+  /* фото едет вместе с текстом; селектор сильнее базового .photo-wrap ниже */
+  .about .photo-wrap {
     position: sticky;
     top: 96px;
   }
@@ -1908,8 +1909,10 @@ html:has(dialog[open]) .cursor {
   border-radius: var(--radius);
 }
 
-.about h2 {
-  margin-bottom: 24px;
+/* заголовок над фото и текстом: на десктопе у левого края, как «Опыт», на телефоне над фото */
+.about > h2 {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .about p {
