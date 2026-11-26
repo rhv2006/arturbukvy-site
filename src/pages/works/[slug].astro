@@ -79,7 +79,7 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     <!-- /Yandex.Metrika counter -->
   </head>
   <body>
-    <main class="case">
+    <main class="case" style={`--canvas-w: ${project.canvas.width}px`}>
       <header class="case-head">
         <a class="case-back" href="/#work">← Все работы</a>
         <h1 class="case-title">{title}</h1>
@@ -191,7 +191,11 @@ const sizes = `(min-width: ${project.canvas.width}px) ${project.canvas.width}px,
     padding: 32px 0 64px;
   }
 
-  .case-head,
+  /* шапка по ширине холста кейса; уже холста — с полями 16px */
+  .case-head {
+    width: min(var(--canvas-w, 1400px), 100% - 32px);
+    margin-inline: auto;
+  }
 
   .case-back {
     display: inline-block;

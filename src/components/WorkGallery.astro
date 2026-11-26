@@ -1056,6 +1056,14 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       const bt = clamp((now - blendT0) / MODE_MS, 0, 1);
       blend = blendFrom + (blendTo - blendFrom) * ease(bt);
 
+      // лента сама медленно едет влево; стоит, пока курсор над ней, её тянут или листают
+      const dt = Math.min(now - lastNow, 100) / 1000;
+      lastNow = now;
+      if (
+        mode === 'ribbon' && blend > 0.99 && !drag && !down && !hovering && now > autoHold &&
+        !reduceMq.matches && infinite(n) && !ribbon.matches(':focus-visible') && !frameEl.matches(':focus-visible')
+      ) tgt += AUTO_SPEED * dt;
+
       // лента: доводка к цели и скорость
       if (!drag) off += (tgt - off) * 0.1;
       ribbonVel += (Math.abs(off - offPrev) - ribbonVel) * 0.2;
@@ -1238,6 +1246,19 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
 
     // ---------- управление лентой: drag, колесо, стрелки, клик ----------
     let drag = false, down = false, moved = false;
+    // автопрокрутка: карточек в секунду; после ручного управления пауза
+    const AUTO_SPEED = 0.12, AUTO_PAUSE_MS = 4000;
+    let hovering = false, autoHold = 0, lastNow = performance.now();
+    const holdAuto = () => (autoHold = performance.now() + AUTO_PAUSE_MS);
+    ribbon.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      hovering = true;
+      if (!drag) tgt = Math.round(off); // останавливается на ближайшей карточке
+    });
+    ribbon.addEventListener('pointerleave', (e) => {
+      if (e.pointerType === 'mouse') hovering = false;
+      kick();
+    });
     let downX = 0, downOff = 0, lastX = 0, lastT = 0, vX = 0;
 
     ribbon.addEventListener('dragstart', (e) => e.preventDefault());
@@ -1245,6 +1266,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
       if (!glOn || e.button !== 0) return;
       down = true;
       moved = false;
+      holdAuto();
       downX = lastX = e.clientX;
       downOff = off;
       lastT = performance.now();
@@ -1314,6 +1336,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
         const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
         if (!dx) return;
         e.preventDefault();
+        holdAuto();
         tgt += dx / step;
         const n = items.length;
         if (!infinite(n)) tgt = clamp(tgt, 0, n - 1);
@@ -1327,6 +1350,7 @@ const kindOf = (i: Item) => (i.videos?.length ? 'banners' : i.loop ? 'loop' : i.
     ribbon.addEventListener('keydown', (e) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       e.preventDefault();
+      holdAuto();
       tgt = Math.round(tgt) + (e.key === 'ArrowRight' ? 1 : -1);
       const n = items.length;
       if (!infinite(n)) tgt = clamp(tgt, 0, n - 1);
