@@ -829,8 +829,10 @@ const view: View[] = tail.length
       setActive(Math.max(0, kMore));
       kick();
     };
+    // stopPropagation: иначе Lenis (anchors) поймает клик по ссылке #work на window и утащит страницу к началу блока
     list.querySelector<HTMLAnchorElement>('[data-work-more]')?.addEventListener('click', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       expand();
       if (mode === 'grid' || !glOn) list.querySelector<HTMLAnchorElement>('.work-item.is-extra .work-link')?.focus({ preventScroll: true });
     });
@@ -1397,11 +1399,13 @@ const view: View[] = tail.length
     frameEl.addEventListener('click', (e) => {
       if (moved) {
         e.preventDefault();
+        e.stopPropagation();
         moved = false;
         return;
       }
       if (items[activeIdx]?.li.classList.contains('is-more')) {
         e.preventDefault();
+        e.stopPropagation();
         expand();
       }
     });
