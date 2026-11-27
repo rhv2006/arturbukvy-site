@@ -1848,6 +1848,13 @@ html:has(dialog[open]) .cursor {
   mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
 
+/* в исходной карусели overscroll-behavior: contain — на телефоне вертикальный свайп по ленте
+   из-за него не доходит до страницы, и её нельзя прокрутить, держа палец на блоке */
+.ac .flex-carousel {
+  overscroll-behavior: auto;
+  touch-action: pan-y;
+}
+
 .ac .flex-carousel:focus-visible {
   box-shadow: inset 0 0 0 2px var(--accent);
 }
