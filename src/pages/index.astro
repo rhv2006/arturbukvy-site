@@ -1342,7 +1342,7 @@ const dateRu = (iso: string) =>
         // lens — раскрытие 0..1, lx/ly — курсор в пикселях канваса (низ = 0), всё с плавной доводкой
         let lens = 0, lensTo = 0, lx = 0, ly = 0, lxTo = 0, lyTo = 0, raf = 0;
         // поворот вокруг вертикали: rotY — угол, velY — скорость после броска
-        let rotY = 0, velY = 0, dragging = false, lastX = 0, lastT = 0;
+        let rotY = 0, velY = 0, dragging = false, lastX = 0, lastT = 0, touchFade = 0;
         // взгляд за курсором: yaw — влево-вправо, pitch — вверх-вниз, с плавной доводкой
         let yaw = 0, yawTo = 0, pitch = 0, pitchTo = 0;
         const frame = () => {
@@ -1424,11 +1424,23 @@ const dateRu = (iso: string) =>
           velY = 0;
           lastX = e.clientX;
           lastT = e.timeStamp;
-          wrap.setPointerCapture(e.pointerId);
           wrap.classList.add('is-drag');
+          // палец: подсветка рёбер там, где коснулись (на мыши она и так идёт за курсором)
+          if (e.pointerType !== 'mouse') {
+            clearTimeout(touchFade);
+            at(e);
+            lx = lxTo;
+            ly = lyTo;
+            lensTo = 1;
+            kick();
+          }
+          try {
+            wrap.setPointerCapture(e.pointerId);
+          } catch {}
         });
         wrap.addEventListener('pointermove', (e) => {
           if (!dragging) return;
+          if (e.pointerType !== 'mouse') at(e);
           const dx = e.clientX - lastX, dt = Math.max(1, e.timeStamp - lastT);
           const k = (Math.PI * 1.6) / box.clientWidth; // ширина кадра ≈ 290°
           rotY += dx * k;
@@ -1442,6 +1454,8 @@ const dateRu = (iso: string) =>
           dragging = false;
           if (e.timeStamp - lastT > 80) velY = 0; // остановили палец перед отпусканием — без броска
           wrap.classList.remove('is-drag');
+          // после касания подсветка держится полсекунды и гаснет
+          if (e.pointerType !== 'mouse') touchFade = window.setTimeout(() => ((lensTo = 0), kick()), 500);
           kick();
         };
         wrap.addEventListener('pointerup', release);
