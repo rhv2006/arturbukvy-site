@@ -13,6 +13,7 @@ export interface Article {
 
 interface Config {
   hidden: string[];
+  titles?: Record<string, string>;
   order: string[];
   cache: Article[];
 }
@@ -90,7 +91,9 @@ export async function getArticles(): Promise<Article[]> {
     const i = config.order.indexOf(a.id);
     return i === -1 ? Number.MAX_SAFE_INTEGER : i;
   };
+  // заголовок на сайте можно задать короче, чем на Teletype (titles в articles.json)
   return list
+    .map((a) => (config.titles?.[a.id] ? { ...a, title: config.titles[a.id] } : a))
     .filter((a) => !config.hidden.includes(a.id))
     .sort((a, b) => rank(a) - rank(b) || b.date.localeCompare(a.date));
 }
