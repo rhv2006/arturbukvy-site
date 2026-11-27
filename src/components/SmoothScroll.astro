@@ -24,8 +24,9 @@
 
     // «Доезжание» текста и блоков: появляются, когда верх входит в нижние 12% экрана.
     // Что вошло одной пачкой — с лесенкой 90 мс.
+    // абзацы с [data-scroll-words] проявляются по словам вместе с прокруткой — их не трогаем
     const items = new Set(
-      document.querySelectorAll<HTMLElement>(
+      [...document.querySelectorAll<HTMLElement>(
         [
           // главная: первый экран (при загрузке, лесенкой), «Обо мне» по абзацам и строкам плашек
           '.hero-content > *',
@@ -34,7 +35,7 @@
           // кейсы
           '.case-title', '.case-text', // картинки кейса стоят вплотную — их не двигаем, иначе между ними мелькают щели
         ].join(','),
-      ),
+      )].filter((el) => !el.hasAttribute('data-scroll-words')),
     );
     const done = (el: HTMLElement) => {
       el.classList.remove('reveal', 'is-in');

@@ -1,0 +1,97 @@
+---
+// Текст проявляется по словам вместе с прокруткой (scrub, по мотивам ScrollReveal из React Bits):
+// слово стоит бледным и размытым, пока до него не дойдёт прокрутка, и наоборот при прокрутке назад.
+// Абзац при этом чуть доворачивается из наклона в 3°. Работает на элементах с [data-scroll-words].
+// При reduced motion текст остаётся обычным.
+---
+
+<script>
+  const BASE_OPACITY = 0.1;
+  const BLUR = 4; // px
+  const ROTATE = 3; // deg
+  const SPAN = 0.35; // какую долю пути проявляется одно слово (остальное — лесенка между словами)
+
+  const els = [...document.querySelectorAll<HTMLElement>('[data-scroll-words]')];
+  if (els.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    type Item = { el: HTMLElement; words: HTMLElement[]; last: number[] };
+    const SPLIT = /([ \t\r\n]+)/;
+    const BLANK = /^[ \t\r\n]+$/;
+    // все текстовые узлы внутри элемента (в том числе во вложенных тегах) режем на слова
+    const splitWords = (root: Element, words: HTMLElement[]) => {
+      for (const node of [...root.childNodes]) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent || '';
+          if (!text.trim()) continue;
+          const frag = document.createDocumentFragment();
+          // режем только по обычным пробелам и переводам строк: неразрывный пробел держит слова вместе
+          for (const part of text.split(SPLIT)) {
+            if (!part) continue;
+            if (BLANK.test(part)) {
+              frag.append(' ');
+              continue;
+            }
+            const s = document.createElement('span');
+            s.className = 'sw-word';
+            s.textContent = part;
+            frag.append(s);
+            words.push(s);
+          }
+          node.replaceWith(frag);
+        } else if (node instanceof Element && !['BR', 'SCRIPT', 'STYLE', 'SVG', 'IMG'].includes(node.tagName.toUpperCase())) {
+          splitWords(node, words);
+        }
+      }
+    };
+    const items: Item[] = els.map((el) => {
+      const words: HTMLElement[] = [];
+      // data-scroll-words="items" — каждый дочерний элемент (пункт списка, строка цифр) проявляется целиком
+      if (el.dataset.scrollWords === 'items') words.push(...([...el.children] as HTMLElement[]));
+      else splitWords(el, words);
+      el.classList.add('sw');
+      return { el, words, last: words.map(() => -1) };
+    });
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = innerHeight;
+      for (const it of items) {
+        const r = it.el.getBoundingClientRect();
+        if (r.bottom < -vh || r.top > vh * 2) continue;
+        // начало — верх абзаца у нижнего края экрана, конец — его низ на трети экрана снизу
+        const start = vh * 0.92;
+        const end = vh * 0.68;
+        const p = Math.min(1, Math.max(0, (start - r.top) / (start - end + r.height)));
+        const rot = ROTATE * (1 - Math.min(1, p * 1.6));
+        it.el.style.rotate = rot < 0.01 ? '' : `${rot.toFixed(2)}deg`;
+        const n = it.words.length;
+        for (let i = 0; i < n; i++) {
+          const from = n > 1 ? (i / (n - 1)) * (1 - SPAN) : 0;
+          let t = Math.min(1, Math.max(0, (p - from) / SPAN));
+          t = Math.round(t * 50) / 50; // мелкие шаги не перерисовываем
+          if (t === it.last[i]) continue;
+          it.last[i] = t;
+          const w = it.words[i].style;
+          // проявленное слово возвращаем к обычному виду: без своего слоя работает свечение текста под курсором
+          w.opacity = t >= 1 ? '' : String(BASE_OPACITY + (1 - BASE_OPACITY) * t);
+          w.filter = t >= 1 ? '' : `blur(${(BLUR * (1 - t)).toFixed(2)}px)`;
+        }
+      }
+    };
+    const kick = () => raf || (raf = requestAnimationFrame(update));
+    addEventListener('scroll', kick, { passive: true });
+    addEventListener('resize', kick);
+    update();
+  }
+</script>
+
+<style is:global>
+  .sw {
+    transform-origin: 0% 50%;
+  }
+
+  .sw-word {
+    transition: none;
+  }
+
+</style>

@@ -1825,6 +1825,70 @@ html:has(dialog[open]) .cursor {
 
 /* ---------- articles ---------- */
 
+/* лента обложек через «жидкое стекло»: на всю ширину экрана, подписи — шрифтами сайта */
+.ac {
+  /* на всю ширину окна, даже когда контент сайта уже (2K и шире) */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  /* сцена начинается под заголовком: поднятые края ленты обрезаются её верхом и не залезают на текст */
+  margin-top: 24px;
+}
+
+.ac {
+  /* изгиб ленты растёт вместе с шириной экрана (линза задана долями ширины) — и высота сцены тоже,
+     иначе поднятые края упираются в её верх и обрезаются */
+  --ac-h: clamp(460px, 36vw, 860px);
+}
+
+.ac-stage {
+  position: relative;
+  height: var(--ac-h);
+  /* края ленты растворяются в фоне, а не обрываются у края экрана */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+
+.ac .flex-carousel:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.ac .flex-carousel__title {
+  max-width: min(720px, 100%);
+  font: 600 clamp(17px, 1.4vw, 24px) / 1.3 var(--display);
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.ac .flex-carousel__subtitle {
+  margin-top: 8px;
+  font: 500 12px/1 var(--body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 1;
+}
+
+.ac .flex-carousel__count {
+  font: 600 13px/1 var(--display);
+  color: var(--muted);
+  opacity: 1;
+}
+
+.ac-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 0;
+}
+
+.articles-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .articles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));

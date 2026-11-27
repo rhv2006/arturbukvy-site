@@ -3,21 +3,10 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Висячие предлоги: после коротких слов («в», «и», «на», «для»…) ставим неразрывный пробел,
-// чтобы они не оставались в конце строки, а тире не переносилось в начало следующей.
-// Пробел после слова может быть и переносом строки в исходнике, и стоять перед тегом (<a>, <b>) — тоже привязываем.
-// Работает на готовом HTML после сборки, поэтому охватывает весь текст, включая кейсы и статьи из RSS.
-const NBSP = ' ';
-const SHORT = /(^|[\s(«"„> ])((?:[а-яёa-z]{1,2}|для|без|над|под|при|про|или|как|что|из-за|из-под))[ \t\r\n]+(?=\S|$)/giu;
-const DASH = /[ \t\r\n]+(—|–)(?=[ \t\r\n])/g;
-const NUM_UNIT = /(\d)[ \t\r\n]+(?=(?:лет|года?|мес|млн|тыс|₽|%|экран|ролик|формат|пост)[а-яё]*)/giu;
+import react from '@astrojs/react';
 
-function typograph(text) {
-  let out = text;
-  // два прохода: в цепочках вроде «и в» второе слово становится видно только после первого
-  for (let i = 0; i < 2; i++) out = out.replace(SHORT, `$1$2${NBSP}`);
-  return out.replace(DASH, `${NBSP}$1`).replace(NUM_UNIT, `$1${NBSP}`);
-}
+// Висячие предлоги и тире — общий типограф (он же нужен для текста, который рисует React в браузере)
+import { typograph } from './src/lib/typograph.mjs';
 
 // <script>/<style>/<pre>/<textarea> и комментарии берём целиком и не трогаем: «<» внутри скрипта
 // иначе ломает разбор тегов, и весь текст страницы после него оставался без типографа
@@ -89,7 +78,7 @@ const typography = {
 
 export default defineConfig({
   site: 'https://xn--80acd5a2aanic6f.xn--p1ai',
-  integrations: [typography],
+  integrations: [typography, react()],
   // обложки Behance пережимаются при сборке в свои файлы: у CDN Behance нет CORS, а WebGL-галерее #work нужны текстуры с нашего домена
   image: { domains: ['mir-s3-cdn-cf.behance.net'] },
   // /опросник — то же, что /oprosnik

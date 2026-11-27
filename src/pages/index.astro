@@ -11,6 +11,9 @@ import Contact from '../components/Contact.astro';
 import Cursor from '../components/Cursor.astro';
 import SmoothScroll from '../components/SmoothScroll.astro';
 import Scrubber from '../components/Scrubber.astro';
+import ScrollWords from '../components/ScrollWords.astro';
+import ArticlesCarousel from '../components/flex/ArticlesCarousel.jsx';
+import { typograph } from '../lib/typograph.mjs';
 
 const [{ top, rest, tail }, articles] = await Promise.all([getCases(), getArticles()]);
 
@@ -211,27 +214,27 @@ const dateRu = (iso: string) =>
 
         <div class="wrap about-copy">
           <div class="about-block about-intro">
-            <h2>Обо мне</h2>
-            <p class="about-lead">
+            <h2 data-scroll-words>Обо мне</h2>
+            <p class="about-lead" data-scroll-words>
               Я Артур, дизайнер с 14‑летним опытом и кейсами для Альфа-Банка, МТС, Роснефти, СБИС, t2 и Фармленда.
             </p>
           </div>
 
           <div class="about-block">
-            <p class="about-label">Что делаю</p>
-            <p>
+            <p class="about-label" data-scroll-words>Что делаю</p>
+            <p data-scroll-words>
               Делаю 3D и motion и закрываю любые графические задачи, от промо до препресса. Делаю 3D-ролики для мобильных
               игр, в том числе рекламные fake gameplay.
             </p>
-            <p>
+            <p data-scroll-words>
               Веду CGI-ролики под ключ: идея, сценарий, сториборд, 3D-продакшен, композитинг. Адаптирую KV и motion под 15+
               форматов: DOOH, POSM, соцсети, pre-roll, 9:16.
             </p>
           </div>
 
           <div class="about-block">
-            <p class="about-label">В цифрах</p>
-            <dl class="about-nums">
+            <p class="about-label" data-scroll-words>В цифрах</p>
+            <dl class="about-nums" data-scroll-words="items">
               {
                 facts.map((f) => (
                   <div>
@@ -244,14 +247,14 @@ const dateRu = (iso: string) =>
           </div>
 
           <div class="about-block">
-            <p class="about-label">Инструменты</p>
-            <ul class="about-tags">{tools.map((t) => <li>{t}</li>)}</ul>
+            <p class="about-label" data-scroll-words>Инструменты</p>
+            <ul class="about-tags" data-scroll-words="items">{tools.map((t) => <li>{t}</li>)}</ul>
           </div>
 
           <div class="about-block">
-            <p class="about-label">Нейросети и автоматизация</p>
-            <ul class="about-tags">{ai.map((t) => <li>{t}</li>)}</ul>
-            <p>
+            <p class="about-label" data-scroll-words>Нейросети и автоматизация</p>
+            <ul class="about-tags" data-scroll-words="items">{ai.map((t) => <li>{t}</li>)}</ul>
+            <p data-scroll-words>
               Ускоряю продакшен нейросетями и автоматизацией на Python: мой скрипт собирает однотипные макеты в 4 раза быстрее.{' '}
               <a class="link" href="#articles">Статьи об автоматизации ↓</a>
             </p>
@@ -261,7 +264,7 @@ const dateRu = (iso: string) =>
 
       <section id="experience" class="section experience" data-xp>
         <div class="wrap section-head">
-          <h2>Опыт</h2>
+          <h2 data-scroll-words>Опыт</h2>
           <a class="link link-accent" href={site.resumePdf} target="_blank" rel="noopener">Полное резюме, PDF ↗</a>
         </div>
         <div class="xp-scroll">
@@ -371,14 +374,14 @@ const dateRu = (iso: string) =>
           </div>
         </div>
         <div class="wrap">
-          <p class="edu">Образование: МГГУ им. Шолохова, графический дизайн, 2013</p>
+          <p class="edu" data-scroll-words>Образование: МГГУ им. Шолохова, графический дизайн, 2013</p>
         </div>
       </section>
 
       <section class="wrap xp-cta">
         <div>
-          <h3>Всё то же самое одним файлом</h3>
-          <p>Резюме в PDF для тех, кому некогда листать.</p>
+          <h3 data-scroll-words>Всё то же самое одним файлом</h3>
+          <p data-scroll-words>Резюме в PDF для тех, кому некогда листать.</p>
         </div>
         <div class="xp-cta-btns">
           <a class="btn btn-primary" href={site.resumePdf} target="_blank" rel="noopener">Скачать резюме PDF</a>
@@ -391,31 +394,25 @@ const dateRu = (iso: string) =>
           <section id="articles" class="section wrap">
             <div class="section-head">
               <div>
-                <h2>Статьи об автоматизации</h2>
-                <p class="section-lead">
+                <h2 data-scroll-words>Статьи об автоматизации</h2>
+                <p class="section-lead" data-scroll-words>
                   Как я убираю рутину из продакшена: скрипты для Illustrator, пакетный рендер в Cinema 4D, Python-боты.
                 </p>
               </div>
               <a class="link link-accent" href={site.automation} target="_blank" rel="noopener">Все статьи на Teletype ↗</a>
             </div>
-            <ul class="articles">
+            {/* обложки лентой через «жидкое стекло» (React Bits FlexCarousel), React грузится, только когда блок близко */}
+            <ArticlesCarousel
+              client:visible
+              articles={articles
+                .filter((a) => a.cover)
+                .map((a) => ({ title: typograph(a.title), url: a.url, cover: a.cover, date: typograph(dateRu(a.date)) }))}
+            />
+            {/* тот же список обычными ссылками — для поисковиков и экранных дикторов */}
+            <ul class="articles-sr">
               {articles.map((a) => (
-                <li class="card article">
-                  <a href={a.url} target="_blank" rel="noopener" data-cursor="Читать">
-                    <div class:list={['card-media', !a.cover && 'no-cover']} data-tilt>
-                      {a.cover ? (
-                        <img src={a.cover} alt="" loading="lazy" decoding="async" />
-                      ) : (
-                        <span class="no-cover-mark" aria-hidden="true">{'</>'}</span>
-                      )}
-                    </div>
-                    <p class="article-date">{dateRu(a.date)}</p>
-                    <h3>
-                      <span class="title-line">{a.title}</span>
-                      <span class="arrow" aria-hidden="true">↗</span>
-                    </h3>
-                    {a.excerpt && <p class="article-excerpt">{a.excerpt}</p>}
-                  </a>
+                <li>
+                  <a href={a.url} target="_blank" rel="noopener">{a.title}</a>
                 </li>
               ))}
             </ul>
@@ -434,6 +431,7 @@ const dateRu = (iso: string) =>
     <Cursor />
     <SmoothScroll />
     <Scrubber />
+    <ScrollWords />
 
     <dialog class="reel" aria-label="Шоурил">
       <button class="reel-close" type="button" data-close-reel aria-label="Закрыть">×</button>
